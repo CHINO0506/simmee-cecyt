@@ -296,7 +296,7 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- Cargamos ExcelJS para permitir incrustar imágenes en celdas de Excel -->
+  <!-- ExcelJS -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 
   <!-- Módulos de Firebase para sincronización global -->
@@ -304,7 +304,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Configuración oficial de tu proyecto Firebase SIMMEE
     const firebaseConfig = {
       apiKey: "AIzaSyBbz_Lu6wA5P6sn1K6JfsVQFVBreujL3sw",
       authDomain: "simmee-e7c9a.firebaseapp.com",
@@ -322,7 +321,6 @@
     window.dataSdk = {
       async init(handler) {
         try {
-          // Escuchador en tiempo real: sincroniza todos los dispositivos conectados
           const q = query(reportesRef, orderBy("created_at", "desc"));
           onSnapshot(q, (snapshot) => {
             const reportes = snapshot.docs.map(doc => ({
@@ -595,7 +593,36 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    // Exportación de Excel optimizada con imágenes embebidas de forma segura
+    // Función auxilar para comprimir y redimensionar la imagen para Excel sin sobrecargar la memoria
+    function optimizarImagenBase64(base64Str) {
+      return new Promise((resolve) => {
+        if (!base64Str || !base64Str.startsWith("data:image")) {
+          resolve(null);
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 300; // tamaño máximo suficiente para celda de Excel
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          } else {
+            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.7)); // compresión ligera JPG
+        };
+        img.onerror = () => resolve(null);
+        img.src = base64Str;
+      });
+    }
+
+    // Exportación de Excel optimizada
     exportButton.addEventListener("click", async () => {
       const reportes = Array.from(records.values());
 
@@ -610,7 +637,7 @@
       }
 
       try {
-        exportMessage.textContent = "Generando archivo Excel con imágenes...";
+        exportMessage.textContent = "Procesando imágenes y generando Excel...";
         
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Reportes SIMMEE");
@@ -669,25 +696,24 @@
 
           row.alignment = { vertical: "middle", wrapText: true };
 
-          if (r.evidence_base64 && typeof r.evidence_base64 === "string" && r.evidence_base64.startsWith("data:image")) {
+          if (r.evidence_base64) {
             try {
-              const mimeMatch = r.evidence_base64.match(/data:image\/(png|jpeg|jpg|webp);base64,/);
-              let extension = "png";
-              if (mimeMatch && mimeMatch[1]) {
-                extension = mimeMatch[1] === "jpg" ? "jpeg" : mimeMatch[1];
+              const imgOptimizada = await optimizarImagenBase64(r.evidence_base64);
+              if (imgOptimizada) {
+                const imageId = workbook.addImage({
+                  base64: imgOptimizada,
+                  extension: "jpeg"
+                });
+
+                worksheet.addImage(imageId, {
+                  tl: { col: 13, row: rowIndex - 1 },
+                  ext: { width: 110, height: 100 }
+                });
+
+                worksheet.getRow(rowIndex).height = 85;
+              } else {
+                worksheet.getRow(rowIndex).height = 30;
               }
-
-              const imageId = workbook.addImage({
-                base64: r.evidence_base64,
-                extension: extension
-              });
-
-              worksheet.addImage(imageId, {
-                tl: { col: 13, row: rowIndex - 1 },
-                ext: { width: 120, height: 110 }
-              });
-
-              worksheet.getRow(rowIndex).height = 90;
             } catch (errImg) {
               console.warn("No se pudo procesar la imagen de este reporte:", errImg);
               worksheet.getRow(rowIndex).height = 30;
@@ -849,9 +875,27 @@
 
       const reader = new FileReader();
       reader.onload = function(evt) {
-        imagenBase64 = evt.target.result;
-        image.src = imagenBase64;
-        preview.classList.remove("hidden");
+        // Redimensionar automáticamente antes de enviar a Firebase para mantener la BD ligera
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 800; // Calidad óptima para almacenamiento web
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          } else {
+            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          imagenBase64 = canvas.toDataURL("image/jpeg", 0.8);
+          image.src = imagenBase64;
+          preview.classList.remove("hidden");
+        };
+        img.src = evt.target.result;
       };
       reader.readAsDataURL(file);
     });
