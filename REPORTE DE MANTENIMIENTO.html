@@ -298,51 +298,57 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <!-- Cargamos ExcelJS para permitir incrustar imágenes en celdas de Excel -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
-  <script>
-  (() => {
-  const storageKey = "simmee-reports";
-  let sessionRecords = [];
-  let dataHandler = null;
 
-  window.dataSdk = {
-    async init(handler) {
-      dataHandler = handler;
+  <!-- Módulos de Firebase para sincronización global -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-      try {
-        const saved = localStorage.getItem(storageKey);
-        sessionRecords = saved ? JSON.parse(saved) : [];
+    // Configuración oficial de tu proyecto Firebase SIMMEE
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbz_Lu6wA5P6sn1K6JfsVQFVBreujL3sw",
+      authDomain: "simmee-e7c9a.firebaseapp.com",
+      projectId: "simmee-e7c9a",
+      storageBucket: "simmee-e7c9a.firebasestorage.app",
+      messagingSenderId: "378362510335",
+      appId: "1:378362510335:web:52405705d81691705185ca",
+      measurementId: "G-98T249RJN6"
+    };
 
-        if (!Array.isArray(sessionRecords)) {
-          throw new Error("Formato de reportes no válido");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const reportesRef = collection(db, "reportes");
+
+    window.dataSdk = {
+      async init(handler) {
+        try {
+          // Escuchador en tiempo real: sincroniza todos los dispositivos conectados
+          const q = query(reportesRef, orderBy("created_at", "desc"));
+          onSnapshot(q, (snapshot) => {
+            const reportes = snapshot.docs.map(doc => ({
+              __backendId: doc.id,
+              ...doc.data()
+            }));
+            handler.onDataChanged(reportes);
+          });
+          return { isOk: true };
+        } catch (error) {
+          console.error("Error al conectar con Firebase Firestore:", error);
+          return { isOk: false };
         }
+      },
 
-        dataHandler.onDataChanged([...sessionRecords]);
-        return { isOk: true };
-      } catch (error) {
-        return { isOk: false };
+      async create(record) {
+        try {
+          await addDoc(reportesRef, record);
+          return { isOk: true };
+        } catch (error) {
+          console.error("Error al guardar en Firebase:", error);
+          return { isOk: false };
+        }
       }
-    },
-
-    async create(record) {
-      const savedRecord = {
-        ...record,
-        __backendId: `${Date.now()}-${Math.random().toString(36).slice(2)}`
-      };
-      const updatedRecords = [...sessionRecords, savedRecord];
-
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(updatedRecords));
-      } catch (error) {
-        return { isOk: false };
-      }
-
-      sessionRecords = updatedRecords;
-      dataHandler?.onDataChanged([...sessionRecords]);
-      return { isOk: true };
-    }
-  };
-})();
-</script>
+    };
+  </script>
  </head>
  <body data-template-id="__page-root" class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
   <div class="top-stripe"></div><nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif"><a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a></nav>
@@ -589,19 +595,9 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    // Función principal para la exportación de Excel con imágenes embebidas
+    // Exportación de Excel con imágenes embebidas
     exportButton.addEventListener("click", async () => {
-      let reportes = [];
-      try {
-        const raw = localStorage.getItem("simmee-reports");
-        reportes = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        reportes = Array.from(records.values());
-      }
-
-      if ((!reportes || reportes.length === 0) && typeof records !== "undefined") {
-        reportes = Array.from(records.values());
-      }
+      const reportes = Array.from(records.values());
 
       if (!reportes || reportes.length === 0) {
         exportMessage.textContent = "No hay reportes guardados para descargar. Registra uno primero.";
@@ -616,11 +612,9 @@
       try {
         exportMessage.textContent = "Generando archivo Excel con imágenes...";
         
-        // Crear libro y hoja de trabajo con ExcelJS
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Reportes SIMMEE");
 
-        // Definir columnas con ancho ajustado
         worksheet.columns = [
           { header: "Folio", key: "ticket_id", width: 22 },
           { header: "Fecha", key: "created_at", width: 20 },
@@ -638,21 +632,19 @@
           { header: "Fotografía de evidencia", key: "evidence", width: 25 }
         ];
 
-        // Estilar la fila del encabezado
         const headerRow = worksheet.getRow(1);
         headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
         headerRow.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "FF6B1531" } // Color tinto institucional
+          fgColor: { argb: "FF6B1531" }
         };
         headerRow.height = 25;
         headerRow.alignment = { vertical: "middle", horizontal: "center" };
 
-        // Recorrer los reportes para agregarlos al Excel
         for (let i = 0; i < reportes.length; i++) {
           const r = reportes[i];
-          const rowIndex = i + 2; // Fila actual (después del encabezado)
+          const rowIndex = i + 2;
 
           const fechaFormateada = r.created_at
             ? new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at))
@@ -675,32 +667,26 @@
             evidence: r.evidence_base64 ? "" : (r.evidence_file_name || "Sin foto")
           });
 
-          // Alineación y ajuste de texto en la celda
           row.alignment = { vertical: "middle", wrapText: true };
 
-          // Si el reporte cuenta con imagen Base64, decodificarla e incrustarla en la celda
           if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
             try {
-              // Extraer extensión de la imagen (png, jpeg, webp)
               const mimeMatch = r.evidence_base64.match(/data:image\/(png|jpeg|jpg|webp);base64,/);
               let extension = "png";
               if (mimeMatch && mimeMatch[1]) {
                 extension = mimeMatch[1] === "jpg" ? "jpeg" : mimeMatch[1];
               }
 
-              // Decodificar Base64 a id de imagen en ExcelJS
               const imageId = workbook.addImage({
                 base64: r.evidence_base64,
                 extension: extension
               });
 
-              // Posicionar la imagen dentro de la celda de la columna 14 (Fotografía)
               worksheet.addImage(imageId, {
                 tl: { col: 13, row: rowIndex - 1 },
                 ext: { width: 120, height: 110 }
               });
 
-              // Ajustar altura de la fila para dar espacio a la imagen
               worksheet.getRow(rowIndex).height = 90;
             } catch (errImg) {
               console.error("Error al incrustar la imagen en ExcelJS:", errImg);
@@ -710,7 +696,6 @@
           }
         }
 
-        // Exportar como archivo descendible .xlsx
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const url = window.URL.createObjectURL(blob);
@@ -880,11 +865,6 @@
 
       if (!validateReporter()) return;
 
-      if (records.size >= 999) {
-        showMessage("Se alcanzó el límite de reportes disponibles. Solicita apoyo al área responsable.", "error");
-        return;
-      }
-
       const ticketId = makeTicketId();
       const record = {
         ticket_id: ticketId,
@@ -939,7 +919,7 @@
         form.reset();
         document.getElementById("evidence-preview").classList.add("hidden");
         imagenBase64 = "";
-        showMessage("Tu reporte fue registrado correctamente y se envió una notificación a tu correo.", "success");
+        showMessage("Tu reporte fue registrado correctamente y se guardó en la base de datos compartida.", "success");
       } else {
         showMessage("No se pudo registrar el reporte. Verifica tu conexión e inténtalo nuevamente.", "error");
       }
@@ -1035,7 +1015,7 @@
       const initResult = await window.dataSdk.init(dataHandler);
 
       if (!initResult.isOk) {
-        showMessage("No fue posible conectar con el sistema de reportes. Intenta nuevamente.", "error");
+        showMessage("No fue posible conectar con la base de datos de reportes.", "error");
       }
     });
   </script>
