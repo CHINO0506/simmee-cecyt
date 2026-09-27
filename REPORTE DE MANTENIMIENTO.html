@@ -296,10 +296,8 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- ExcelJS con respaldo cdnjs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
-  <!-- Módulos de Firebase para sincronización global -->
+  <!-- Módulos de Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -321,19 +319,16 @@
     window.dataSdk = {
       async init(handler) {
         try {
-          // Lectura directa flexible sin ordenamiento estricto para no colapsar si falta un índice
           onSnapshot(reportesRef, (snapshot) => {
             const reportes = snapshot.docs.map(doc => ({
               __backendId: doc.id,
               ...doc.data()
             }));
             handler.onDataChanged(reportes);
-          }, (err) => {
-            console.error("Error en snapshot:", err);
           });
           return { isOk: true };
         } catch (error) {
-          console.error("Error al conectar con Firebase Firestore:", error);
+          console.error("Error al conectar con Firebase:", error);
           return { isOk: false };
         }
       },
@@ -504,8 +499,8 @@
      </div>
      <div style="display:flex;justify-content:flex-end;margin:18px 0 8px">
   <button id="export-excel" type="button"
-    style="background:#6b1531;color:white;padding:10px 16px;border:0;border-radius:6px;cursor:pointer;font-weight:700">
-    Descargar Excel
+    style="background:#6b1531; color:white; padding:10px 16px; border:0; border-radius:6px; cursor:pointer; font-weight:700; position:relative; z-index:10; pointer-events:auto;">
+    Descargar Excel (.csv)
   </button>
 </div>
 <p id="export-message" role="status" aria-live="polite"
@@ -595,37 +590,8 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    // Función auxiliar para optimizar la imagen antes de meterla a Excel
-    function optimizarImagenBase64(base64Str) {
-      return new Promise((resolve) => {
-        if (!base64Str || typeof base64Str !== "string" || !base64Str.startsWith("data:image")) {
-          resolve(null);
-          return;
-        }
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const maxDim = 250;
-          let w = img.width;
-          let h = img.height;
-          if (w > h) {
-            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          } else {
-            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
-        };
-        img.onerror = () => resolve(null);
-        img.src = base64Str;
-      });
-    }
-
-    // Exportación de Excel a prueba de fallos
-    exportButton.addEventListener("click", async () => {
+    // OPCIÓN 3: Exportación instantánea a CSV compatible con Excel
+    exportButton.addEventListener("click", () => {
       const reportes = Array.from(records.values());
 
       if (!reportes || reportes.length === 0) {
@@ -633,119 +599,56 @@
         return;
       }
 
-      if (typeof ExcelJS === "undefined") {
-        exportMessage.textContent = "Cargando librería ExcelJS... intenta de nuevo en unos segundos.";
-        return;
-      }
-
       try {
-        exportMessage.textContent = "Generando archivo Excel...";
-        
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Reportes SIMMEE");
+        let csvContent = "\uFEFF"; // Mantiene los acentos y las 'ñ' en Excel
+        csvContent += "Folio,Fecha,Unidad,Tipo de espacio,Ubicación,Categoría,Descripción,Prioridad,Estado,Nombre,Correo,Rol,Boleta/ID\n";
 
-        worksheet.columns = [
-          { header: "Folio", key: "ticket_id", width: 22 },
-          { header: "Fecha", key: "created_at", width: 20 },
-          { header: "Unidad", key: "unit", width: 24 },
-          { header: "Tipo de espacio", key: "location_type", width: 20 },
-          { header: "Ubicación", key: "location_detail", width: 30 },
-          { header: "Categoría", key: "category", width: 22 },
-          { header: "Descripción", key: "description", width: 50 },
-          { header: "Prioridad", key: "priority", width: 14 },
-          { header: "Estado", key: "status", width: 18 },
-          { header: "Nombre reportante", key: "reporter_name", width: 25 },
-          { header: "Correo", key: "reporter_email", width: 28 },
-          { header: "Rol", key: "reporter_role", width: 18 },
-          { header: "Boleta/ID", key: "reporter_student_id", width: 18 },
-          { header: "Fotografía de evidencia", key: "evidence", width: 25 }
-        ];
-
-        const headerRow = worksheet.getRow(1);
-        headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-        headerRow.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FF6B1531" }
-        };
-        headerRow.height = 25;
-        headerRow.alignment = { vertical: "middle", horizontal: "center" };
-
-        for (let i = 0; i < reportes.length; i++) {
-          const r = reportes[i];
-          const rowIndex = i + 2;
-
-          let fechaFormateada = "";
+        reportes.forEach(r => {
+          let fecha = "";
           if (r.created_at) {
             try {
-              fechaFormateada = new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at));
-            } catch (e) { fechaFormateada = r.created_at; }
+              fecha = new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at));
+            } catch (e) { fecha = r.created_at; }
           }
 
-          const row = worksheet.addRow({
-            ticket_id: r.ticket_id || r.folio || "SIN FOLIO",
-            created_at: fechaFormateada,
-            unit: r.unit || "",
-            location_type: r.location_type || "",
-            location_detail: r.location_detail || "",
-            category: r.category || "",
-            description: r.description || "",
-            priority: r.priority || "Media",
-            status: r.status || "En revisión",
-            reporter_name: r.reporter_name || "",
-            reporter_email: r.reporter_email || "",
-            reporter_role: r.reporter_role || "",
-            reporter_student_id: r.reporter_student_id || "",
-            evidence: (r.evidence_base64 && r.evidence_base64.length > 50) ? "" : (r.evidence_file_name || "Sin foto")
-          });
+          const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
 
-          row.alignment = { vertical: "middle", wrapText: true };
+          const fila = [
+            `"${r.ticket_id || r.folio || 'SIMMEE'}"`,
+            `"${fecha}"`,
+            `"${r.unit || ''}"`,
+            `"${r.location_type || ''}"`,
+            `"${r.location_detail || ''}"`,
+            `"${r.category || ''}"`,
+            `"${descLimpia}"`,
+            `"${r.priority || 'Media'}"`,
+            `"${r.status || 'En revisión'}"`,
+            `"${r.reporter_name || ''}"`,
+            `"${r.reporter_email || ''}"`,
+            `"${r.reporter_role || ''}"`,
+            `"${r.reporter_student_id || ''}"`
+          ].join(",");
+          csvContent += fila + "\n";
+        });
 
-          if (r.evidence_base64 && r.evidence_base64.length > 50) {
-            try {
-              const imgOptimizada = await optimizarImagenBase64(r.evidence_base64);
-              if (imgOptimizada) {
-                const imageId = workbook.addImage({
-                  base64: imgOptimizada,
-                  extension: "jpeg"
-                });
-
-                worksheet.addImage(imageId, {
-                  tl: { col: 13, row: rowIndex - 1 },
-                  ext: { width: 100, height: 90 }
-                });
-
-                worksheet.getRow(rowIndex).height = 80;
-              } else {
-                worksheet.getRow(rowIndex).height = 30;
-              }
-            } catch (errImg) {
-              worksheet.getRow(rowIndex).height = 30;
-            }
-          } else {
-            worksheet.getRow(rowIndex).height = 30;
-          }
-        }
-
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        const url = window.URL.createObjectURL(blob);
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         
         const ahora = new Date();
         const fechaStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
-        
+
         a.href = url;
-        a.download = `SIMMEE_Reportes_${fechaStr}.xlsx`;
+        a.download = `SIMMEE_Reportes_${fechaStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
 
-        exportMessage.textContent = `Descarga completada con ${reportes.length} reportes.`;
+        exportMessage.textContent = `Se descargó el archivo con ${reportes.length} reportes correctamente.`;
       } catch (error) {
-        console.error("Error al generar Excel:", error);
-        exportMessage.textContent = "Ocurrió un error al procesar el Excel.";
+        console.error("Error al exportar:", error);
+        exportMessage.textContent = "Ocurrió un error al generar la descarga.";
       }
     });
 
