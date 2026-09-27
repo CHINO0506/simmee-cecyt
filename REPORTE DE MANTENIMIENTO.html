@@ -5,7 +5,7 @@
   <title>SIMMEE — Sistema para Monitoreo de Mobiliario y Espacios Educativos</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&amp;family=Source+Sans+Pro:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
   
-  <!-- SDK de EmailJS para envío de notificaciones por correo -->
+  <!-- SDK de EmailJS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function(){
@@ -296,13 +296,13 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- ExcelJS -->
+  <!-- ExcelJS con respaldo cdnjs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
   <!-- Módulos de Firebase para sincronización global -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBbz_Lu6wA5P6sn1K6JfsVQFVBreujL3sw",
@@ -321,13 +321,15 @@
     window.dataSdk = {
       async init(handler) {
         try {
-          const q = query(reportesRef, orderBy("created_at", "desc"));
-          onSnapshot(q, (snapshot) => {
+          // Lectura directa flexible sin ordenamiento estricto para no colapsar si falta un índice
+          onSnapshot(reportesRef, (snapshot) => {
             const reportes = snapshot.docs.map(doc => ({
               __backendId: doc.id,
               ...doc.data()
             }));
             handler.onDataChanged(reportes);
+          }, (err) => {
+            console.error("Error en snapshot:", err);
           });
           return { isOk: true };
         } catch (error) {
@@ -593,17 +595,17 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    // Función auxilar para comprimir y redimensionar la imagen para Excel sin sobrecargar la memoria
+    // Función auxiliar para optimizar la imagen antes de meterla a Excel
     function optimizarImagenBase64(base64Str) {
       return new Promise((resolve) => {
-        if (!base64Str || !base64Str.startsWith("data:image")) {
+        if (!base64Str || typeof base64Str !== "string" || !base64Str.startsWith("data:image")) {
           resolve(null);
           return;
         }
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const maxDim = 300; // tamaño máximo suficiente para celda de Excel
+          const maxDim = 250;
           let w = img.width;
           let h = img.height;
           if (w > h) {
@@ -615,29 +617,29 @@
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", 0.7)); // compresión ligera JPG
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
         img.onerror = () => resolve(null);
         img.src = base64Str;
       });
     }
 
-    // Exportación de Excel optimizada
+    // Exportación de Excel a prueba de fallos
     exportButton.addEventListener("click", async () => {
       const reportes = Array.from(records.values());
 
       if (!reportes || reportes.length === 0) {
-        exportMessage.textContent = "No hay reportes guardados para descargar. Registra uno primero.";
+        exportMessage.textContent = "No hay reportes cargados para descargar. Registra uno o recarga la página.";
         return;
       }
 
       if (typeof ExcelJS === "undefined") {
-        exportMessage.textContent = "No se pudo cargar la librería ExcelJS. Verifica que tienes conexión a internet.";
+        exportMessage.textContent = "Cargando librería ExcelJS... intenta de nuevo en unos segundos.";
         return;
       }
 
       try {
-        exportMessage.textContent = "Procesando imágenes y generando Excel...";
+        exportMessage.textContent = "Generando archivo Excel...";
         
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Reportes SIMMEE");
@@ -673,30 +675,33 @@
           const r = reportes[i];
           const rowIndex = i + 2;
 
-          const fechaFormateada = r.created_at
-            ? new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at))
-            : "";
+          let fechaFormateada = "";
+          if (r.created_at) {
+            try {
+              fechaFormateada = new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at));
+            } catch (e) { fechaFormateada = r.created_at; }
+          }
 
           const row = worksheet.addRow({
-            ticket_id: r.ticket_id || "",
+            ticket_id: r.ticket_id || r.folio || "SIN FOLIO",
             created_at: fechaFormateada,
             unit: r.unit || "",
             location_type: r.location_type || "",
             location_detail: r.location_detail || "",
             category: r.category || "",
             description: r.description || "",
-            priority: r.priority || "",
-            status: r.status || "",
+            priority: r.priority || "Media",
+            status: r.status || "En revisión",
             reporter_name: r.reporter_name || "",
             reporter_email: r.reporter_email || "",
             reporter_role: r.reporter_role || "",
             reporter_student_id: r.reporter_student_id || "",
-            evidence: r.evidence_base64 ? "" : (r.evidence_file_name || "Sin foto")
+            evidence: (r.evidence_base64 && r.evidence_base64.length > 50) ? "" : (r.evidence_file_name || "Sin foto")
           });
 
           row.alignment = { vertical: "middle", wrapText: true };
 
-          if (r.evidence_base64) {
+          if (r.evidence_base64 && r.evidence_base64.length > 50) {
             try {
               const imgOptimizada = await optimizarImagenBase64(r.evidence_base64);
               if (imgOptimizada) {
@@ -707,15 +712,14 @@
 
                 worksheet.addImage(imageId, {
                   tl: { col: 13, row: rowIndex - 1 },
-                  ext: { width: 110, height: 100 }
+                  ext: { width: 100, height: 90 }
                 });
 
-                worksheet.getRow(rowIndex).height = 85;
+                worksheet.getRow(rowIndex).height = 80;
               } else {
                 worksheet.getRow(rowIndex).height = 30;
               }
             } catch (errImg) {
-              console.warn("No se pudo procesar la imagen de este reporte:", errImg);
               worksheet.getRow(rowIndex).height = 30;
             }
           } else {
@@ -738,10 +742,10 @@
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
 
-        exportMessage.textContent = `Se descargó el archivo Excel con ${reportes.length} reportes correctamente.`;
+        exportMessage.textContent = `Descarga completada con ${reportes.length} reportes.`;
       } catch (error) {
         console.error("Error al generar Excel:", error);
-        exportMessage.textContent = "Ocurrió un error al generar el archivo Excel.";
+        exportMessage.textContent = "Ocurrió un error al procesar el Excel.";
       }
     });
 
@@ -765,42 +769,43 @@
     }
 
     function formatDate(iso) {
+      if (!iso) return "";
       const date = new Date(iso);
-      return Number.isNaN(date.getTime()) ? "" :
+      return Number.isNaN(date.getTime()) ? iso :
         new Intl.DateTimeFormat("es-MX", { day: "2-digit", month: "short", year: "numeric" }).format(date);
     }
 
     function matchesFilters(item) {
       const content = [
-        item.ticket_id, item.unit, item.location_type, item.location_detail,
-        item.category, item.description, item.priority, item.status, item.reporter_role
+        item.ticket_id || "", item.unit || "", item.location_type || "", item.location_detail || "",
+        item.category || "", item.description || "", item.priority || "", item.status || "", item.reporter_role || ""
       ].join(" ").toLowerCase();
 
       return content.includes(searchTerm) && (selectedStatus === "all" || item.status === selectedStatus);
     }
 
     function updateTicketElement(element, item) {
-      element.querySelector(".ticket-id").textContent = item.ticket_id;
-      element.querySelector(".ticket-status").textContent = item.status;
-      element.querySelector(".ticket-category").textContent = item.category;
-      element.querySelector(".ticket-description").textContent = item.description;
-      element.querySelector(".ticket-location").textContent = item.unit + " · " + item.location_type + " " + item.location_detail;
+      element.querySelector(".ticket-id").textContent = item.ticket_id || item.folio || "SIMMEE";
+      element.querySelector(".ticket-status").textContent = item.status || "En revisión";
+      element.querySelector(".ticket-category").textContent = item.category || "General";
+      element.querySelector(".ticket-description").textContent = item.description || "";
+      element.querySelector(".ticket-location").textContent = (item.unit || "") + " · " + (item.location_type || "") + " " + (item.location_detail || "");
 
       const priority = element.querySelector(".ticket-priority");
-      priority.textContent = item.priority;
-      priority.className = "ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold " + priorityClass(item.priority);
+      priority.textContent = item.priority || "Media";
+      priority.className = "ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold " + priorityClass(item.priority || "Media");
 
-      element.querySelector(".ticket-role").textContent = item.reporter_role;
+      element.querySelector(".ticket-role").textContent = item.reporter_role || "Comunidad";
 
       const time = element.querySelector(".ticket-date");
-      time.dateTime = item.created_at;
+      time.dateTime = item.created_at || "";
       time.textContent = formatDate(item.created_at);
     }
 
     function renderTickets() {
       const visible = Array.from(records.values())
         .filter(matchesFilters)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
       const existing = new Map(Array.from(ticketList.children).map(element => [element.dataset.recordId, element]));
 
@@ -875,11 +880,10 @@
 
       const reader = new FileReader();
       reader.onload = function(evt) {
-        // Redimensionar automáticamente antes de enviar a Firebase para mantener la BD ligera
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const maxDim = 800; // Calidad óptima para almacenamiento web
+          const maxDim = 800;
           let w = img.width;
           let h = img.height;
           if (w > h) {
@@ -891,7 +895,7 @@
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          imagenBase64 = canvas.toDataURL("image/jpeg", 0.8);
+          imagenBase64 = canvas.toDataURL("image/jpeg", 0.75);
           image.src = imagenBase64;
           preview.classList.remove("hidden");
         };
