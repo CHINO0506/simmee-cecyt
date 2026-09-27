@@ -9,7 +9,6 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function(){
-      
        emailjs.init("jsWGbUD11FRxkiseZ");
     })();
   </script>
@@ -297,6 +296,7 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Cargamos la librería SheetJS para la descarga de hojas de cálculo -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
   (() => {
@@ -578,7 +578,7 @@
     const records = new Map();
     let searchTerm = "";
     let selectedStatus = "all";
-    let imagenBase64 = ""; // Variable para almacenar la imagen en texto Base64
+    let imagenBase64 = "";
 
     const form = document.getElementById("report-form");
     const submitButton = document.getElementById("submit-button");
@@ -590,12 +590,15 @@
     const exportMessage = document.getElementById("export-message");
 
     exportButton.addEventListener("click", () => {
-      // 1. Intentar obtener datos desde el almacenamiento local
       let reportes = [];
       try {
         const raw = localStorage.getItem("simmee-reports");
         reportes = raw ? JSON.parse(raw) : [];
       } catch (e) {
+        reportes = Array.from(records.values());
+      }
+
+      if ((!reportes || reportes.length === 0) && typeof records !== "undefined") {
         reportes = Array.from(records.values());
       }
 
@@ -613,7 +616,7 @@
         const encabezados = [
           "Folio", "Fecha", "Unidad", "Tipo de espacio", "Ubicación",
           "Categoría", "Descripción", "Prioridad", "Estado",
-          "Perfil reportante", "Archivo de evidencia", "Imagen Base64"
+          "Nombre reportante", "Correo", "Rol", "Boleta/ID", "Archivo de evidencia"
         ];
 
         const filas = reportes.map(reporte => [
@@ -628,16 +631,18 @@
           reporte.description || "",
           reporte.priority || "",
           reporte.status || "",
+          reporte.reporter_name || "",
+          reporte.reporter_email || "",
           reporte.reporter_role || "",
-          reporte.evidence_file_name || "",
-          reporte.evidence_base64 || ""
+          reporte.reporter_student_id || "",
+          reporte.evidence_file_name || ""
         ]);
 
         const hoja = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
         hoja["!cols"] = [
           { wch: 22 }, { wch: 20 }, { wch: 24 }, { wch: 20 },
           { wch: 30 }, { wch: 22 }, { wch: 55 }, { wch: 14 },
-          { wch: 18 }, { wch: 20 }, { wch: 32 }, { wch: 40 }
+          { wch: 18 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 32 }
         ];
 
         const libro = XLSX.utils.book_new();
@@ -770,7 +775,6 @@
       return true;
     }
 
-    // Convertir imagen cargada a Base64 y mostrar vista previa
     document.getElementById("evidence-file").addEventListener("change", event => {
       const file = event.target.files[0];
       const preview = document.getElementById("evidence-preview");
@@ -839,7 +843,6 @@
         document.getElementById("generated-ticket").textContent = ticketId;
         document.getElementById("ticket-result").classList.remove("hidden");
 
-        // Enviar notificación por correo usando EmailJS
         const emailParams = {
           to_name: record.reporter_name,
           to_email: record.reporter_email,
