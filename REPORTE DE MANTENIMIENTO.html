@@ -595,7 +595,7 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    // Exportación de Excel con imágenes embebidas
+    // Exportación de Excel optimizada con imágenes embebidas de forma segura
     exportButton.addEventListener("click", async () => {
       const reportes = Array.from(records.values());
 
@@ -669,7 +669,7 @@
 
           row.alignment = { vertical: "middle", wrapText: true };
 
-          if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
+          if (r.evidence_base64 && typeof r.evidence_base64 === "string" && r.evidence_base64.startsWith("data:image")) {
             try {
               const mimeMatch = r.evidence_base64.match(/data:image\/(png|jpeg|jpg|webp);base64,/);
               let extension = "png";
@@ -689,7 +689,8 @@
 
               worksheet.getRow(rowIndex).height = 90;
             } catch (errImg) {
-              console.error("Error al incrustar la imagen en ExcelJS:", errImg);
+              console.warn("No se pudo procesar la imagen de este reporte:", errImg);
+              worksheet.getRow(rowIndex).height = 30;
             }
           } else {
             worksheet.getRow(rowIndex).height = 30;
@@ -713,7 +714,7 @@
 
         exportMessage.textContent = `Se descargó el archivo Excel con ${reportes.length} reportes correctamente.`;
       } catch (error) {
-        console.error(error);
+        console.error("Error al generar Excel:", error);
         exportMessage.textContent = "Ocurrió un error al generar el archivo Excel.";
       }
     });
