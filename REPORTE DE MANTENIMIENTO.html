@@ -1,21 +1,17 @@
 <!doctype html>
-<html lang="es-MX">
-<head>
+<html lang="es-MX"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIMMEE — Sistema para Monitoreo de Mobiliario y Espacios Educativos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Source+Sans+Pro:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&amp;family=Source+Sans+Pro:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
   
-  <!-- SDK de EmailJS -->
+  <!-- SDK de EmailJS para envío de notificaciones por correo -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function(){
        emailjs.init("jsWGbUD11FRxkiseZ");
     })();
   </script>
-
-  <!-- Librería ExcelJS para incrustar imágenes reales en el Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -60,6 +56,11 @@
       box-shadow: 0 0 0 3px rgba(107,21,49,.14);
     }
 
+    .form-control.invalid {
+      border-color: #b42318;
+      background: #fff7f5;
+    }
+
     .field-label {
       display: block;
       margin-bottom: .35rem;
@@ -72,86 +73,259 @@
       transition: transform .2s, box-shadow .2s;
     }
 
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(58,34,40,.10);
+    }
+
     .priority-alta { color: #9b1c1c; background: #fde8e7; }
     .priority-media { color: #875600; background: #fff4d7; }
     .priority-baja { color: #215f44; background: #e2f4e9; }
 
-    .btn-excel-enabled {
-      background: #6b1531 !important;
-      color: #ffffff !important;
-      cursor: pointer !important;
+    .chat-bubble-user {
+      background: var(--wine);
+      color: #fff;
+      border-radius: 16px 16px 3px 16px;
+    }
+
+    .chat-bubble-bot {
+      background: var(--cream);
+      color: #35252a;
+      border-radius: 16px 16px 16px 3px;
+    }
+
+    .chat-panel {
+      transform: translateY(18px) scale(.96);
+      transform-origin: bottom right;
+      opacity: 0;
+      pointer-events: none;
+      max-height: calc(82 * min(var(--vh, 1vh), 1vh));
+      display: flex;
+      flex-direction: column;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    .chat-panel.is-open {
+      transform: translateY(0) scale(1);
       opacity: 1;
+      pointer-events: auto;
+    }
+
+    .juanito-avatar {
+      position: relative;
+      overflow: hidden;
+      flex: 0 0 auto;
+      min-height: 8.5rem;
+      aspect-ratio: .68;
+      border-radius: 2.2rem 2.2rem 1.4rem 1.4rem;
+      background: linear-gradient(155deg, #63d8f2 0%, #b7f2f7 43%, #ffcf4a 44%, #ff8c42 100%);
+      border: 3px solid #fff;
+      box-shadow: inset 7px 7px 0 rgba(255,255,255,.42), inset -8px -12px 0 rgba(217,74,62,.22), 0 10px 18px rgba(70,16,34,.22);
+      animation: avatarBob 2.8s ease-in-out infinite;
+    }
+
+    .avatar-face {
+      position: absolute;
+      width: 48%;
+      height: 31%;
+      left: 26%;
+      top: 13%;
+      border-radius: 45% 45% 48% 48%;
+      background: #f3a36f;
+      border: 3px solid #7b2942;
+      box-shadow: inset 4px 5px 0 rgba(255,220,177,.35), 0 5px 8px rgba(70,16,34,.2);
+      z-index: 2;
+    }
+
+    .avatar-hair {
+      position: absolute;
+      z-index: 3;
+      width: 58%;
+      height: 19%;
+      left: 21%;
+      top: 7%;
+      border-radius: 60% 65% 28% 25%;
+      background: #54233c;
+      border: 3px solid #7b2942;
+      transform: rotate(-6deg);
+    }
+
+    .avatar-eye {
+      position: absolute;
+      top: 42%;
+      width: 13%;
+      height: 13%;
+      border-radius: 50%;
+      background: #302238;
+      border: 2px solid #fff;
+      animation: avatarBlink 4.5s infinite;
+    }
+    .avatar-eye-left { left: 21%; }
+    .avatar-eye-right { right: 21%; }
+    .avatar-smile {
+      position: absolute;
+      left: 33%;
+      top: 65%;
+      width: 34%;
+      height: 15%;
+      border-bottom: 3px solid #7b2942;
+      border-radius: 0 0 50% 50%;
+    }
+    .avatar-body {
+      position: absolute;
+      z-index: 1;
+      width: 70%;
+      height: 51%;
+      left: 15%;
+      bottom: -3%;
+      border-radius: 35% 35% 12% 12%;
+      background: #63b9df;
+      border: 3px solid #7b2942;
+      border-top: 5px solid #ffe06a;
+      box-shadow: inset 0 -1.5rem 0 rgba(40,93,151,.28);
+    }
+
+    .avatar-body::before,
+    .avatar-body::after {
+      content: "";
+      position: absolute;
+      top: 16%;
+      width: 19%;
+      height: 62%;
+      border-radius: 999px;
+      background: #c9825d;
+      border: 3px solid #461022;
+    }
+
+    .avatar-body::before { left: -17%; transform: rotate(15deg); }
+    .avatar-body::after { right: -17%; transform: rotate(-15deg); }
+
+    .avatar-illustration { position: relative; overflow: hidden; flex: 0 0 auto; min-height: 8.5rem; aspect-ratio: .68; border-radius: 2.2rem 2.2rem 1.4rem 1.4rem; background: linear-gradient(155deg,#63d8f2 0%,#b7f2f7 43%,#ffcf4a 44%,#ff8c42 100%); border: 3px solid #fff; box-shadow: inset 7px 7px 0 rgba(255,255,255,.42),inset -8px -12px 0 rgba(217,74,62,.22),0 10px 18px rgba(70,16,34,.22); }
+    .avatar-illustration .avatar-emblem { position:absolute; left:0;right:0;top:40%;z-index:2;color:#fff;font-size:.7rem;font-weight:900;text-align:center;text-shadow:0 1px 3px #461022; }
+    .avatar-illustration.mini-avatar { width:64px;height:64px;min-height:0;aspect-ratio:auto; }
+    
+    .juanito-launcher {
+      animation: juanitoFloat 3.2s ease-in-out infinite;
+      box-shadow: 0 15px 34px rgba(70,16,34,.32);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .juanito-launcher .juanito-avatar {
+      animation: avatarGreeting 2.8s ease-in-out infinite;
+      transform-origin: 50% 85%;
+    }
+
+    .juanito-speech {
+      position: relative;
+      max-width: 14rem;
+      padding: .7rem .95rem;
+      border: 2px solid var(--gold);
+      border-radius: 1rem 1rem .25rem 1rem;
+      background: #fffdf9;
+      color: var(--wine-dark);
+      font-weight: 700;
+      line-height: 1.15;
+      box-shadow: 0 10px 24px rgba(70,16,34,.2);
+      animation: speechPop 3.2s ease-in-out infinite;
+    }
+
+    .juanito-speech::after {
+      content: "";
+      position: absolute;
+      right: -.55rem;
+      bottom: .65rem;
+      width: 1rem;
+      height: 1rem;
+      background: #fffdf9;
+      border-right: 2px solid var(--gold);
+      border-top: 2px solid var(--gold);
+      transform: rotate(45deg);
+    }
+
+    .juanito-launcher:hover .juanito-avatar { animation-play-state: paused; }
+    .juanito-launcher:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 38px rgba(70,16,34,.42);
+    }
+
+    @keyframes juanitoFloat {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50% { transform: translateY(-5px) rotate(1deg); }
+    }
+
+    @keyframes avatarGreeting {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      18% { transform: rotate(-7deg) translateY(-2px); }
+      36% { transform: rotate(8deg) translateY(-2px); }
+      54% { transform: rotate(-6deg) translateY(-1px); }
+      72% { transform: rotate(4deg) translateY(0); }
+    }
+
+    @keyframes speechPop {
+      0%, 78%, 100% { opacity: .72; transform: scale(.96) translateY(2px); }
+      12%, 65% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes avatarBob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-3px) rotate(2deg); }
+    }
+
+    @keyframes avatarBlink {
+      0%, 44%, 48%, 100% { transform: scaleY(1); }
+      46% { transform: scaleY(.12); }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+  (() => {
+  const storageKey = "simmee-reports";
+  let sessionRecords = [];
+  let dataHandler = null;
 
-  <!-- Módulos de Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBbz_Lu6wA5P6sn1K6JfsVQFVBreujL3sw",
-      authDomain: "simmee-e7c9a.firebaseapp.com",
-      projectId: "simmee-e7c9a",
-      storageBucket: "simmee-e7c9a.firebasestorage.app",
-      messagingSenderId: "378362510335",
-      appId: "1:378362510335:web:52405705d81691705185ca",
-      measurementId: "G-98T249RJN6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const reportesRef = collection(db, "reportes");
-
-    window.dataSdk = {
-      async init(handler) {
-        try {
-          onSnapshot(reportesRef, (snapshot) => {
-            const reportes = snapshot.docs.map(doc => ({
-              __backendId: doc.id,
-              ...doc.data()
-            }));
-            handler.onDataChanged(reportes);
-          });
-          return { isOk: true };
-        } catch (error) {
-          console.error("Error al conectar con Firebase:", error);
-          return { isOk: false };
+  window.dataSdk = {
+    async init(handler) {
+      dataHandler = handler;
+      try {
+        const saved = localStorage.getItem(storageKey);
+        sessionRecords = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(sessionRecords)) {
+          throw new Error("Formato de reportes no válido");
         }
-      },
-
-      async create(record) {
-        try {
-          await addDoc(reportesRef, record);
-          return { isOk: true };
-        } catch (error) {
-          console.error("Error al guardar en Firebase:", error);
-          return { isOk: false };
-        }
-      },
-
-      async updateStatus(id, newStatus) {
-        try {
-          const docRef = doc(db, "reportes", id);
-          await updateDoc(docRef, { status: newStatus });
-          return { isOk: true };
-        } catch (error) {
-          console.error("Error al actualizar estado:", error);
-          return { isOk: false };
-        }
+        dataHandler.onDataChanged([...sessionRecords]);
+        return { isOk: true };
+      } catch (error) {
+        return { isOk: false };
       }
-    };
-  </script>
-</head>
-<body data-template-id="__page-root" class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
-  <div class="top-stripe"></div>
-  <nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif; display: flex; justify-content: space-between; align-items: center;">
-    <a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a>
-    <button id="toggle-admin-btn" style="background:transparent; border:1px solid #6b1531; color:#6b1531; padding: 4px 10px; border-radius: 4px; font-weight:700; cursor:pointer;">Acceso Administrador</button>
-  </nav>
+    },
 
+    async create(record) {
+      const savedRecord = {
+        ...record,
+        __backendId: `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      };
+      const updatedRecords = [...sessionRecords, savedRecord];
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updatedRecords));
+      } catch (error) {
+        return { isOk: false };
+      }
+      sessionRecords = updatedRecords;
+      dataHandler?.onDataChanged([...sessionRecords]);
+      return { isOk: true };
+    }
+  };
+})();
+</script>
+</head>
+<body class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
+  <div class="top-stripe"></div>
+  <nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif">
+    <a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a>
+  </nav>
+  
   <header class="bg-white border-b border-stone-200">
    <div class="w-full max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3 min-w-0">
@@ -159,8 +333,8 @@
       <img loading="lazy" class="w-full h-full object-contain p-1" src="WhatsApp Image 2026-09-26 at 5.30.05 PM.jpeg" alt="Logotipo del CECyT 7 Cuauhtémoc">
      </div>
      <div class="min-w-0">
-      <p class="text-xs tracking-[.16em] uppercase font-bold" style="color: rgb(107, 21, 49);">Instituto Politécnico Nacional</p>
-      <p class="font-bold leading-tight" style="color: rgb(36, 31, 32);">SIMMEE</p>
+      <p class="text-xs tracking-[.16em] uppercase font-bold" style="color: rgb(107, 21, 49); font-size: 16px;">Instituto Politécnico Nacional</p>
+      <p class="font-bold leading-tight" style="color: rgb(36, 31, 32); font-size: 16px;">SIMMEE</p>
      </div>
     </div>
     <div class="hidden sm:flex items-center gap-2 text-sm text-[#6b1531] font-semibold">
@@ -174,51 +348,37 @@
     <div class="hero-overlay absolute inset-0"></div>
     <div class="relative w-full max-w-7xl mx-auto px-5 py-14 md:py-20">
      <div class="max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border border-[#c9a227]" style="background: rgb(107, 21, 49); color: rgb(230, 198, 107);">
+       <i data-lucide="armchair" class="w-3.5 h-3.5"></i> <span>Cuidemos nuestros espacios educativos</span>
+      </div>
       <h1 class="display-font mt-5 font-bold leading-tight text-white text-4xl">Sistema para Monitoreo de Mobiliario y Espacios Educativos</h1>
-      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-[#f7ead8]">SIMMEE facilita el registro, monitoreo y seguimiento de incidencias en mobiliario, equipo e infraestructura.</p>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed" style="color: rgb(247, 234, 216);">SIMMEE facilita el registro, monitoreo y seguimiento de incidencias en mobiliario, equipo e infraestructura de los espacios educativos.</p>
      </div>
     </div>
    </section>
 
-   <!-- PANEL DE ADMINISTRADOR -->
-   <section id="admin-panel" class="hidden w-full max-w-7xl mx-auto px-5 pt-8">
-     <div class="p-5 bg-amber-50 border border-amber-200 rounded-md shadow-sm">
-       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-         <div>
-           <p class="font-bold text-amber-900 text-lg">Panel de Control Administrador</p>
-           <p class="text-xs text-amber-800">Descarga el reporte completo con imágenes incrustadas en formato XLSX.</p>
-         </div>
-         
-         <div>
-           <button id="export-excel" class="btn-excel-enabled px-4 py-2 rounded-md text-sm font-bold transition-all">
-             Descargar Excel con Fotos (.xlsx)
-           </button>
-         </div>
-       </div>
-       <p id="export-message" role="status" class="text-right text-xs mt-2 text-amber-900 font-semibold"></p>
-     </div>
-   </section>
-
-   <section class="w-full max-w-7xl mx-auto px-5 py-10">
+   <section class="w-full max-w-7xl mx-auto px-5 py-10 md:py-14">
     <div class="grid lg:grid-cols-[1.08fr_.92fr] gap-7 items-start">
      <div class="space-y-7">
-      <section class="bg-white border border-stone-200 shadow-sm p-6 md:p-8">
-       <h2 class="font-bold text-2xl text-stone-800">Levanta un reporte</h2>
-       <form id="report-form" class="mt-7 space-y-5" novalidate>
+      <section class="bg-white border border-stone-200 p-6 md:p-7 shadow-sm">
+       <h2 class="font-bold text-2xl" style="color: rgb(36, 31, 32);">Levanta un reporte</h2>
+       <p class="mt-1 text-stone-600">Registra la incidencia con información precisa para facilitar su revisión y atención.</p>
+       
+       <form id="report-form" class="mt-7 space-y-5" novalidate="">
         <fieldset>
-         <legend class="font-bold text-[#6b1531] mb-3">Persona reportante</legend>
+         <legend class="font-bold text-[#6b1531] mb-3">Validación de la persona reportante</legend>
          <div class="grid sm:grid-cols-2 gap-4">
           <div>
            <label class="field-label" for="reporter-name">Nombre completo</label> 
-           <input id="reporter-name" class="form-control" type="text" required>
+           <input id="reporter-name" class="form-control" type="text" required="" autocomplete="name">
           </div>
           <div>
            <label class="field-label" for="reporter-email">Correo de contacto</label> 
-           <input id="reporter-email" class="form-control" type="email" required>
+           <input id="reporter-email" class="form-control" type="email" required="" autocomplete="email">
           </div>
           <div>
-           <label class="field-label" for="reporter-role">Rol</label> 
-           <select id="reporter-role" class="form-control" required> 
+           <label class="field-label" for="reporter-role">Rol dentro de la comunidad</label> 
+           <select id="reporter-role" class="form-control" required=""> 
              <option value="">Selecciona tu rol</option> 
              <option value="Estudiante">Estudiante</option> 
              <option value="Docente">Docente</option> 
@@ -226,54 +386,60 @@
            </select>
           </div>
           <div>
-           <label class="field-label" for="reporter-id">Boleta / N° Empleado</label> 
-           <input id="reporter-id" class="form-control" type="text" required minlength="6">
+           <label class="field-label" for="reporter-id">Boleta o número de empleado</label> 
+           <input id="reporter-id" class="form-control" type="text" required="" minlength="6" autocomplete="off">
           </div>
          </div>
         </fieldset>
-        
+
+        <div class="h-px bg-stone-200"></div>
+
         <fieldset>
-         <legend class="font-bold text-[#6b1531] mb-3">Detalles de la incidencia</legend>
+         <legend class="font-bold text-[#6b1531] mb-3">Información de la incidencia</legend>
          <div class="grid sm:grid-cols-2 gap-4">
           <div>
            <label class="field-label" for="unit">Unidad académica</label> 
-           <input id="unit" class="form-control" type="text" required>
+           <input id="unit" class="form-control" type="text" required="">
           </div>
           <div>
            <label class="field-label" for="location-type">Tipo de espacio</label> 
-           <select id="location-type" class="form-control" required> 
+           <select id="location-type" class="form-control" required=""> 
+             <option value="">Selecciona un espacio</option> 
              <option value="Aula">Aula</option> 
              <option value="Laboratorio">Laboratorio</option> 
              <option value="Taller">Taller</option> 
              <option value="Área común">Área común</option> 
+             <option value="Oficina">Oficina</option> 
            </select>
           </div>
           <div>
            <label class="field-label" for="location-detail">Ubicación específica</label> 
-           <input id="location-detail" class="form-control" type="text" required>
+           <input id="location-detail" class="form-control" type="text" required="">
           </div>
           <div>
-           <label class="field-label" for="category">Categoría</label> 
-           <select id="category" class="form-control" required> 
+           <label class="field-label" for="category">Categoría del reporte</label> 
+           <select id="category" class="form-control" required=""> 
+             <option value="">Selecciona una categoría</option> 
              <option value="Mobiliario">Mobiliario</option> 
              <option value="Equipo">Equipo</option> 
              <option value="Infraestructura">Infraestructura</option> 
+             <option value="Materiales">Materiales</option> 
            </select>
           </div>
           <div>
            <label class="field-label" for="priority">Prioridad</label> 
-           <select id="priority" class="form-control" required> 
+           <select id="priority" class="form-control" required=""> 
              <option value="Media">Media</option> 
              <option value="Alta">Alta</option> 
              <option value="Baja">Baja</option> 
            </select>
           </div>
           <div class="sm:col-span-2">
-           <label class="field-label" for="description">Descripción</label> 
-           <textarea id="description" class="form-control min-h-28" required minlength="20"></textarea>
+           <label class="field-label" for="description">Describe el problema</label> 
+           <textarea id="description" class="form-control resize-y min-h-28" required="" minlength="20" maxlength="700"></textarea>
           </div>
           <div class="sm:col-span-2">
-           <label class="field-label" for="evidence-file">Fotografía de evidencia (Opcional)</label> 
+           <label class="field-label" for="evidence-file">Fotografía de evidencia</label> 
            <input id="evidence-file" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
            <div id="evidence-preview" class="hidden mt-3">
             <img id="evidence-preview-image" class="max-h-48 w-auto rounded-md border border-stone-200 object-contain" alt="Vista previa">
@@ -282,63 +448,60 @@
          </div>
         </fieldset>
         
-        <p id="form-message" class="hidden text-sm rounded-md px-3 py-2" aria-live="polite"></p>
-        <button id="submit-button" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-5 py-3 rounded-md font-bold text-white bg-[#6b1531]" type="submit"> 
-          <i data-lucide="send" class="w-4 h-4"></i> <span>Registrar reporte</span> 
+        <p id="form-message" class="hidden text-sm rounded-md px-3 py-2"></p>
+        <button id="submit-button" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-5 py-3 rounded-md font-bold text-white transition hover:brightness-95" type="submit" style="background: rgb(107, 21, 49);"> 
+          <i data-lucide="send" class="w-4 h-4"></i> <span>Registrar reporte y generar folio</span> 
         </button>
        </form>
       </section>
      </div>
 
-     <aside class="space-y-6">
-      <section class="bg-[#6b1531] text-white p-6 shadow-lg rounded">
-       <h2 class="font-bold text-xl">Constancia de reporte</h2>
-       <p class="mt-2 text-[#f5e8d7] text-sm">Conserva tu folio generado para consulta posterior.</p>
-       <div id="ticket-result" class="hidden mt-4 rounded bg-white/10 p-4 border border-white/20">
-        <p class="text-xs uppercase text-[#e6c66b] font-bold">Folio asignado</p>
-        <p id="generated-ticket" class="mt-1 font-bold text-xl tracking-wide"></p>
-       </div>
-      </section>
-
-      <!-- CHATBOT JUANITO -->
-      <section class="bg-white border border-stone-200 rounded shadow-sm p-5">
-       <div class="flex items-center gap-3 border-b pb-3 mb-3">
-        <div class="w-10 h-10 rounded-full bg-[#6b1531] text-white flex items-center justify-center font-bold">J</div>
+     <aside>
+      <section class="bg-[#6b1531] text-white p-6 shadow-lg rounded-md">
+       <div class="flex gap-4">
+        <div class="w-11 h-11 shrink-0 rounded-full bg-[#c9a227] text-[#461022] flex items-center justify-center">
+         <i data-lucide="ticket-check" class="w-5 h-5"></i>
+        </div>
         <div>
-         <p class="font-bold text-stone-800">Juanito</p>
-         <p class="text-xs text-stone-500">Asistente Virtual SIMMEE</p>
+         <h2 class="font-bold text-2xl">Constancia de reporte</h2>
+         <p class="mt-2 text-[#f5e8d7] leading-relaxed">Al registrar tu reporte recibirás un folio SIMMEE. Consérvalo para consultarlo en el tablero de monitoreo.</p>
+         <div id="ticket-result" class="hidden mt-5 rounded-md bg-white/10 border border-white/20 p-4">
+          <p class="text-xs uppercase tracking-widest text-[#e6c66b] font-bold">Folio generado</p>
+          <p id="generated-ticket" class="mt-1 font-bold text-xl tracking-wide"></p>
+         </div>
         </div>
-       </div>
-       <div id="chat-messages" class="h-48 overflow-y-auto space-y-3 text-sm pr-2 bg-stone-50 p-3 rounded border border-stone-100">
-        <div class="bg-white p-2.5 rounded shadow-sm border border-stone-200 max-w-[85%]">
-         <p class="text-stone-800">¡Hola! Soy <strong>Juanito</strong>. ¿Tienes dudas sobre cómo levantar tu reporte o adjuntar tu fotografía de evidencia? Pregúntame lo que necesites.</p>
-        </div>
-       </div>
-       <div class="mt-3 flex gap-2">
-        <input id="chat-input" type="text" class="form-control text-sm" placeholder="Escribe tu duda aquí...">
-        <button id="chat-send" class="bg-[#6b1531] text-white px-4 rounded font-bold text-sm">Enviar</button>
        </div>
       </section>
      </aside>
     </div>
    </section>
 
-   <!-- TABLERO MONITOREO DE REPORTES -->
-   <section class="bg-[#eeeae3] border-y border-stone-200 py-10">
-    <div class="w-full max-w-7xl mx-auto px-5">
-     <div class="flex justify-between items-center">
-       <div>
-         <h2 class="font-bold text-2xl text-stone-800">Tablero de monitoreo</h2>
-         <p class="text-sm text-stone-600">Seguimiento en tiempo real del estado de reportes.</p>
-       </div>
-       <span id="ticket-count" class="text-sm font-semibold text-[#6b1531]">0 reportes</span>
-     </div>
-
-     <div class="bg-white mt-6 p-4 border border-stone-200 grid md:grid-cols-[1fr_220px] gap-4">
+   <section class="bg-[#eeeae3] border-y border-stone-200">
+    <div class="w-full max-w-7xl mx-auto px-5 py-10 md:py-14">
+     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
       <div>
-       <input id="ticket-search" class="form-control" type="search" placeholder="Buscar folio, ubicación, categoría...">
+       <p class="text-xs tracking-[.16em] uppercase font-bold text-[#6b1531]">Transparencia y seguimiento</p>
+       <h2 class="mt-2 font-bold text-2xl" style="color: rgb(36, 31, 32);">Tablero de reportes SIMMEE</h2>
+      </div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-[#6b1531]">
+       <i data-lucide="list-checks" class="w-4 h-4"></i> <span id="ticket-count">0 reportes</span>
+      </div>
+     </div>
+     
+     <div style="display:flex;justify-content:flex-end;margin:18px 0 8px">
+       <button id="export-excel" type="button" style="background:#6b1531;color:white;padding:10px 16px;border:0;border-radius:6px;cursor:pointer;font-weight:700">
+         Descargar Excel
+       </button>
+     </div>
+     <p id="export-message" role="status" aria-live="polite" style="text-align:right;color:#5e5a5c;font-size:14px"></p>
+
+     <div class="bg-white mt-7 p-4 border border-stone-200 grid md:grid-cols-[1fr_220px] gap-4">
+      <div>
+       <label class="field-label" for="ticket-search">Buscar reportes</label> 
+       <input id="ticket-search" class="form-control" type="search">
       </div>
       <div>
+       <label class="field-label" for="status-filter">Filtrar por estado</label> 
        <select id="status-filter" class="form-control"> 
          <option value="all">Todos los estados</option> 
          <option value="En revisión">En revisión</option> 
@@ -349,33 +512,92 @@
      </div>
 
      <div id="ticket-list" class="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
-     <div id="empty-state" class="mt-6 bg-white border border-dashed border-stone-300 py-12 text-center">
-      <p class="text-stone-600">No hay reportes visibles en este momento.</p>
+     <div id="empty-state" class="mt-6 bg-white border border-dashed border-stone-300 py-12 px-6 text-center">
+      <i data-lucide="inbox" class="w-8 h-8 mx-auto text-[#c9a227]"></i>
+      <h3 class="mt-3 font-bold text-xl" style="color: rgb(36, 31, 32);">Aún no hay reportes visibles</h3>
      </div>
     </div>
    </section>
   </main>
 
-  <!-- PLANTILLA DE TARJETAS DE REPORTES -->
-  <template id="ticket-template">
-   <article class="ticket-card bg-white border border-stone-200 rounded p-5 shadow-sm flex flex-col justify-between">
-    <div>
-      <div class="flex items-start justify-between gap-3">
-       <p class="ticket-id text-xs font-bold text-[#6b1531]"></p>
-       <span class="ticket-status-badge rounded-full px-2.5 py-1 text-xs font-bold bg-[#efe9de] text-[#5f513f]"></span>
-       
-       <select class="ticket-status-select hidden text-xs font-bold rounded p-1 border border-stone-300 bg-stone-50">
-         <option value="En revisión">En revisión</option>
-         <option value="En proceso">En proceso</option>
-         <option value="Atendido">Atendido</option>
-       </select>
+  <footer class="bg-[#461022] text-white">
+   <div class="w-full max-w-7xl mx-auto px-5 py-6 flex flex-col sm:flex-row gap-3 justify-between text-sm">
+    <p>SIMMEE · Sistema para Monitoreo de Mobiliario y Espacios Educativos</p>
+    <p class="text-[#e6c66b]">La técnica al servicio de la patria</p>
+   </div>
+  </footer>
+
+  <!-- Chatbot Flotante de Juanito -->
+  <div class="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+   <div class="juanito-speech" role="status">¡Huelum, Huelum, Gloria!</div>
+   <section id="juanito-panel" class="chat-panel w-[min(24rem,calc(100vw-2.5rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl overflow-hidden" aria-label="Chat de ayuda con Juanito">
+    <div class="bg-white h-full flex flex-col">
+     <div class="p-4 border-b border-stone-100 flex items-center gap-3">
+      <div role="img" aria-label="Ilustración de Juanito" class="juanito-avatar avatar-illustration w-36 h-36 shrink-0">
+        <span class="avatar-hair"></span>
+        <span class="avatar-face"><span class="avatar-eye avatar-eye-left"></span><span class="avatar-eye avatar-eye-right"></span><span class="avatar-smile"></span></span>
+        <span class="avatar-body"><span class="avatar-emblem">IPN</span></span>
       </div>
-      <h3 class="ticket-category mt-3 font-bold text-lg"></h3>
-      <p class="ticket-description mt-2 text-sm text-stone-600"></p>
+      <div class="min-w-0 flex-1">
+       <h2 class="font-bold text-lg" style="color: rgb(36, 31, 32);">Juanito te ayuda</h2>
+       <p class="text-sm text-[#215f44] font-semibold">Politécnico SIMMEE · En línea</p>
+      </div>
+      <button id="close-chat" type="button" class="p-2 rounded-full text-[#6b1531] hover:bg-[#f3eadf]" aria-label="Cerrar chat"> 
+        <i data-lucide="x" class="w-5 h-5"></i> 
+      </button>
+     </div>
+     <div id="chat-messages" class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto">
+      <div class="chat-bubble-bot p-3 text-sm">
+       <span>¡Hola! Soy Juanito, estudiante como tú. Puedo ayudarte a redactar tu reporte, elegir la prioridad o entender cómo darle seguimiento a tu folio.</span>
+      </div>
+     </div>
+     <div class="p-4 pt-0">
+      <div class="flex flex-wrap gap-2 mb-3">
+       <button type="button" data-chat-topic="descripcion" class="chat-topic text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold">Mejorar descripción</button> 
+       <button type="button" data-chat-topic="prioridad" class="chat-topic text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold">Elegir prioridad</button> 
+       <button type="button" data-chat-topic="seguimiento" class="chat-topic text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold">Dar seguimiento</button>
+      </div>
+      <form id="chat-form" class="flex gap-2">
+       <label for="chat-input" class="sr-only">Mensaje para Juanito</label> 
+       <input id="chat-input" class="form-control text-sm" type="text"> 
+       <button class="px-3 rounded-md text-white" type="submit" aria-label="Enviar mensaje" style="background: rgb(107, 21, 49);"> 
+         <i data-lucide="send-horizontal" class="w-4 h-4"></i> 
+       </button>
+      </form>
+     </div>
     </div>
-    <div class="mt-4 pt-3 border-t border-stone-100 flex justify-between items-center text-xs text-stone-500">
-      <span class="ticket-location font-semibold"></span>
-      <span class="ticket-priority px-2 py-0.5 rounded-full font-bold"></span>
+   </section>
+   <button id="chat-launcher" class="juanito-launcher flex items-center gap-3 rounded-full bg-[#6b1531] text-white pl-2 pr-5 py-2 focus:outline-none" type="button" aria-expanded="false" aria-controls="juanito-panel" style="background: rgb(107, 21, 49);"> 
+     <span role="img" aria-label="Juanito" class="juanito-avatar avatar-illustration mini-avatar">
+       <span class="avatar-hair"></span>
+       <span class="avatar-face"><span class="avatar-eye avatar-eye-left"></span><span class="avatar-eye avatar-eye-right"></span><span class="avatar-smile"></span></span>
+       <span class="avatar-body"><span class="avatar-emblem">IPN</span></span>
+     </span> 
+     <span class="font-bold">Pregunta a Juanito</span> 
+     <i data-lucide="message-circle" class="w-5 h-5"></i> 
+   </button>
+  </div>
+
+  <template id="ticket-template">
+   <article class="ticket-card bg-white border border-stone-200 rounded-sm p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-3">
+     <p class="ticket-id text-xs font-bold tracking-wider text-[#6b1531]"></p>
+     <span class="ticket-status rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap bg-[#efe9de] text-[#5f513f]"></span>
+    </div>
+    <h3 class="ticket-category mt-4 font-bold text-xl"></h3>
+    <p class="ticket-description mt-2 text-sm text-stone-600 leading-relaxed"></p>
+    <div class="mt-5 pt-4 border-t border-stone-100 grid grid-cols-2 gap-4 text-sm">
+     <div>
+      <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Ubicación</p>
+      <p class="ticket-location mt-1 font-semibold"></p>
+     </div>
+     <div>
+      <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Prioridad</p>
+      <span class="ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold"></span>
+     </div>
+    </div>
+    <div class="mt-4 flex items-center justify-between gap-3 text-xs text-stone-500">
+     <span class="ticket-role"></span> <time class="ticket-date"></time>
     </div>
    </article>
   </template>
@@ -385,7 +607,6 @@
     let searchTerm = "";
     let selectedStatus = "all";
     let imagenBase64 = "";
-    let isAdminMode = false;
 
     const form = document.getElementById("report-form");
     const submitButton = document.getElementById("submit-button");
@@ -393,34 +614,151 @@
     const ticketList = document.getElementById("ticket-list");
     const emptyState = document.getElementById("empty-state");
     const ticketCount = document.getElementById("ticket-count");
-    
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
-    const toggleAdminBtn = document.getElementById("toggle-admin-btn");
-    const adminPanel = document.getElementById("admin-panel");
 
-    toggleAdminBtn.addEventListener("click", () => {
-      if (!isAdminMode) {
-        const pass = prompt("Ingresa la clave de administrador:");
-        if (pass === "admin123") {
-          isAdminMode = true;
-          toggleAdminBtn.textContent = "Cerrar Administrador";
-          toggleAdminBtn.style.background = "#6b1531";
-          toggleAdminBtn.style.color = "#ffffff";
-          adminPanel.classList.remove("hidden");
-          renderTickets();
-        } else if (pass !== null) {
-          alert("Contraseña incorrecta");
-        }
-      } else {
-        isAdminMode = false;
-        toggleAdminBtn.textContent = "Acceso Administrador";
-        toggleAdminBtn.style.background = "transparent";
-        toggleAdminBtn.style.color = "#6b1531";
-        adminPanel.classList.add("hidden");
-        renderTickets();
+    exportButton.addEventListener("click", () => {
+      let reportes = [];
+      try {
+        const raw = localStorage.getItem("simmee-reports");
+        reportes = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        reportes = Array.from(records.values());
+      }
+
+      if (!reportes || reportes.length === 0) {
+        exportMessage.textContent = "No hay reportes guardados para descargar. Registra uno primero.";
+        return;
+      }
+
+      try {
+        const encabezados = [
+          "Folio", "Fecha", "Unidad", "Tipo de espacio", "Ubicación",
+          "Categoría", "Descripción", "Prioridad", "Estado",
+          "Perfil reportante", "Archivo de evidencia", "Imagen Base64"
+        ];
+
+        const filas = reportes.map(reporte => [
+          reporte.ticket_id || "",
+          reporte.created_at ? new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(reporte.created_at)) : "",
+          reporte.unit || "",
+          reporte.location_type || "",
+          reporte.location_detail || "",
+          reporte.category || "",
+          reporte.description || "",
+          reporte.priority || "",
+          reporte.status || "",
+          reporte.reporter_role || "",
+          reporte.evidence_file_name || "",
+          reporte.evidence_base64 || ""
+        ]);
+
+        const hoja = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
+        hoja["!cols"] = [
+          { wch: 22 }, { wch: 20 }, { wch: 24 }, { wch: 20 },
+          { wch: 30 }, { wch: 22 }, { wch: 55 }, { wch: 14 },
+          { wch: 18 }, { wch: 20 }, { wch: 32 }, { wch: 40 }
+        ];
+
+        const libro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(libro, hoja, "Reportes SIMMEE");
+        
+        const ahora = new Date();
+        const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
+
+        XLSX.writeFile(libro, `SIMMEE_Reportes_${fecha}.xlsx`);
+        exportMessage.textContent = `Se descargaron ${filas.length} reportes correctamente.`;
+      } catch (error) {
+        console.error(error);
+        exportMessage.textContent = "Ocurrió un error al generar el archivo Excel.";
       }
     });
+
+    function showMessage(message, type) {
+      formMessage.textContent = message;
+      formMessage.className = "text-sm rounded-md px-3 py-2";
+      formMessage.classList.add(type === "error" ? "bg-red-50 text-red-800" : "bg-emerald-50 text-emerald-800");
+    }
+
+    function makeTicketId() {
+      const date = new Date();
+      return "SIMMEE-" + date.getFullYear() +
+        String(date.getMonth() + 1).padStart(2, "0") +
+        String(date.getDate()).padStart(2, "0") +
+        "-" + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function priorityClass(priority) {
+      return priority === "Alta" ? "priority-alta" : priority === "Baja" ? "priority-baja" : "priority-media";
+    }
+
+    function formatDate(iso) {
+      const date = new Date(iso);
+      return Number.isNaN(date.getTime()) ? "" :
+        new Intl.DateTimeFormat("es-MX", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+    }
+
+    function matchesFilters(item) {
+      const content = [
+        item.ticket_id, item.unit, item.location_type, item.location_detail,
+        item.category, item.description, item.priority, item.status, item.reporter_role
+      ].join(" ").toLowerCase();
+
+      return content.includes(searchTerm) && (selectedStatus === "all" || item.status === selectedStatus);
+    }
+
+    function updateTicketElement(element, item) {
+      element.querySelector(".ticket-id").textContent = item.ticket_id;
+      element.querySelector(".ticket-status").textContent = item.status;
+      element.querySelector(".ticket-category").textContent = item.category;
+      element.querySelector(".ticket-description").textContent = item.description;
+      element.querySelector(".ticket-location").textContent = item.unit + " · " + item.location_type + " " + item.location_detail;
+
+      const priority = element.querySelector(".ticket-priority");
+      priority.textContent = item.priority;
+      priority.className = "ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold " + priorityClass(item.priority);
+
+      element.querySelector(".ticket-role").textContent = item.reporter_role;
+
+      const time = element.querySelector(".ticket-date");
+      time.dateTime = item.created_at;
+      time.textContent = formatDate(item.created_at);
+    }
+
+    function renderTickets() {
+      const visible = Array.from(records.values())
+        .filter(matchesFilters)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      const existing = new Map(Array.from(ticketList.children).map(element => [element.dataset.recordId, element]));
+
+      visible.forEach(item => {
+        const current = existing.get(item.__backendId);
+        if (current) {
+          updateTicketElement(current, item);
+          existing.delete(item.__backendId);
+          return;
+        }
+
+        const fragment = document.getElementById("ticket-template").content.cloneNode(true);
+        const card = fragment.querySelector("article");
+        card.dataset.recordId = item.__backendId;
+        updateTicketElement(card, item);
+        ticketList.appendChild(fragment);
+      });
+
+      existing.forEach(element => element.remove());
+      emptyState.classList.toggle("hidden", visible.length > 0);
+      ticketCount.textContent = visible.length + (visible.length === 1 ? " reporte" : " reportes");
+    }
+
+    const dataHandler = {
+      onDataChanged(data) {
+        records.clear();
+        data.forEach(item => records.set(item.__backendId, item));
+        renderTickets();
+      }
+    };
 
     document.getElementById("evidence-file").addEventListener("change", event => {
       const file = event.target.files[0];
@@ -436,259 +774,155 @@
 
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const maxDim = 800;
-          let w = img.width;
-          let h = img.height;
-          if (w > h) {
-            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          } else {
-            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
-          imagenBase64 = canvas.toDataURL("image/jpeg", 0.75);
-          image.src = imagenBase64;
-          preview.classList.remove("hidden");
-        };
-        img.src = evt.target.result;
+        imagenBase64 = evt.target.result;
+        image.src = imagenBase64;
+        preview.classList.remove("hidden");
       };
       reader.readAsDataURL(file);
     });
 
-    // Función avanzada con ExcelJS para incrustar las imágenes directamente en el Excel
-    exportButton.addEventListener("click", async () => {
-      const reportes = Array.from(records.values());
-      if (reportes.length === 0) {
-        exportMessage.textContent = "Aún no hay reportes registrados para exportar.";
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
         return;
       }
 
-      try {
-        exportMessage.textContent = "Generando archivo Excel con imágenes...";
-        
-        const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet("Reportes SIMMEE");
-
-        // Definir columnas
-        sheet.columns = [
-          { header: "Folio", key: "ticket_id", width: 15 },
-          { header: "Fecha", key: "created_at", width: 20 },
-          { header: "Unidad", key: "unit", width: 20 },
-          { header: "Tipo", key: "location_type", width: 15 },
-          { header: "Ubicación", key: "location_detail", width: 20 },
-          { header: "Categoría", key: "category", width: 15 },
-          { header: "Descripción", key: "description", width: 30 },
-          { header: "Prioridad", key: "priority", width: 12 },
-          { header: "Estado", key: "status", width: 15 },
-          { header: "Reportante", key: "reporter_name", width: 20 },
-          { header: "Correo", key: "reporter_email", width: 25 },
-          { header: "Rol", key: "reporter_role", width: 18 },
-          { header: "ID / Boleta", key: "reporter_student_id", width: 15 },
-          { header: "Evidencia Fotográfica", key: "photo_col", width: 22 }
-        ];
-
-        // Estilizar cabecera
-        sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
-        sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "6B1531" } };
-
-        let rowIndex = 2;
-        for (const r of reportes) {
-          sheet.addRow({
-            ticket_id: r.ticket_id || "SIMMEE",
-            created_at: r.created_at ? new Date(r.created_at).toLocaleString() : "",
-            unit: r.unit || "",
-            location_type: r.location_type || "",
-            location_detail: r.location_detail || "",
-            category: r.category || "",
-            description: r.description || "",
-            priority: r.priority || "Media",
-            status: r.status || "En revisión",
-            reporter_name: r.reporter_name || "",
-            reporter_email: r.reporter_email || "",
-            reporter_role: r.reporter_role || "",
-            reporter_student_id: r.reporter_student_id || "",
-            photo_col: r.evidence_base64 ? "" : "Sin fotografía"
-          });
-
-          // Ajustar altura de la fila para dar espacio a la foto
-          sheet.getRow(rowIndex).height = 70;
-
-          // Si hay fotografía en base64, incrustarla directamente en la celda
-          if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
-            const base64Data = r.evidence_base64.split(",")[1];
-            const imageId = workbook.addImage({
-              base64: base64Data,
-              extension: 'jpeg',
-            });
-
-            sheet.addImage(imageId, {
-              tl: { col: 13, row: rowIndex - 1 }, // Columna 13 (Evidencia Fotográfica)
-              ext: { width: 90, height: 60 }
-            });
-          }
-
-          rowIndex++;
-        }
-
-        // Descargar el archivo XLSX
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `SIMMEE_Reportes_${new Date().toISOString().slice(0,10)}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        exportMessage.textContent = `¡Éxito! Se exportaron ${reportes.length} reportes con sus fotografías visibles.`;
-      } catch (err) {
-        console.error("Error al exportar a XLSX con imágenes:", err);
-        exportMessage.textContent = "Hubo un error al generar el archivo Excel.";
-      }
-    });
-
-    function showMessage(msg, type) {
-      formMessage.textContent = msg;
-      formMessage.className = `text-sm rounded-md px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`;
-      formMessage.classList.remove("hidden");
-    }
-
-    function renderTickets() {
-      const visible = Array.from(records.values())
-        .filter(r => {
-          const text = [r.ticket_id, r.unit, r.category, r.description, r.status].join(" ").toLowerCase();
-          return text.includes(searchTerm) && (selectedStatus === "all" || r.status === selectedStatus);
-        })
-        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-      ticketList.innerHTML = "";
-      visible.forEach(item => {
-        const fragment = document.getElementById("ticket-template").content.cloneNode(true);
-        fragment.querySelector(".ticket-id").textContent = item.ticket_id || "SIMMEE";
-        fragment.querySelector(".ticket-category").textContent = item.category || "General";
-        fragment.querySelector(".ticket-description").textContent = item.description || "";
-        fragment.querySelector(".ticket-location").textContent = `${item.unit || ''} (${item.location_type || ''})`;
-        
-        const badge = fragment.querySelector(".ticket-status-badge");
-        const select = fragment.querySelector(".ticket-status-select");
-
-        if (isAdminMode) {
-          badge.classList.add("hidden");
-          select.classList.remove("hidden");
-          select.value = item.status || "En revisión";
-          select.onchange = async (e) => {
-            select.disabled = true;
-            await window.dataSdk.updateStatus(item.__backendId, e.target.value);
-            select.disabled = false;
-          };
-        } else {
-          badge.classList.remove("hidden");
-          select.classList.add("hidden");
-          badge.textContent = item.status || "En revisión";
-        }
-
-        const prio = fragment.querySelector(".ticket-priority");
-        prio.textContent = item.priority || "Media";
-        prio.className = `ticket-priority px-2 py-0.5 rounded-full font-bold ${item.priority === 'Alta' ? 'priority-alta' : item.priority === 'Baja' ? 'priority-baja' : 'priority-media'}`;
-
-        ticketList.appendChild(fragment);
-      });
-
-      emptyState.classList.toggle("hidden", visible.length > 0);
-      ticketCount.textContent = `${visible.length} ${visible.length === 1 ? 'reporte' : 'reportes'}`;
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!form.checkValidity()) { form.reportValidity(); return; }
-
+      const ticketId = makeTicketId();
       const record = {
-        ticket_id: "SIMMEE-" + Date.now().toString().slice(-6),
+        ticket_id: ticketId,
         reporter_name: document.getElementById("reporter-name").value.trim(),
-        reporter_email: document.getElementById("reporter-email").value.trim(),
         reporter_role: document.getElementById("reporter-role").value,
+        reporter_email: document.getElementById("reporter-email").value.trim(),
         reporter_student_id: document.getElementById("reporter-id").value.trim(),
         unit: document.getElementById("unit").value.trim(),
         location_type: document.getElementById("location-type").value,
         location_detail: document.getElementById("location-detail").value.trim(),
         category: document.getElementById("category").value,
-        priority: document.getElementById("priority").value,
         description: document.getElementById("description").value.trim(),
+        evidence_file_name: document.getElementById("evidence-file").files[0]?.name || "",
         evidence_base64: imagenBase64,
+        priority: document.getElementById("priority").value,
         status: "En revisión",
         created_at: new Date().toISOString()
       };
 
       submitButton.disabled = true;
-      const res = await window.dataSdk.create(record);
-      submitButton.disabled = false;
+      formMessage.classList.add("hidden");
 
-      if (res.isOk) {
-        document.getElementById("generated-ticket").textContent = record.ticket_id;
+      const result = await window.dataSdk.create(record);
+
+      if (result.isOk) {
+        // Envío de correo electrónico automático mediante EmailJS
+        const templateParams = {
+          ticket_id: record.ticket_id,
+          reporter_name: record.reporter_name,
+          reporter_email: record.reporter_email,
+          reporter_role: record.reporter_role,
+          unit: record.unit,
+          location_type: record.location_type,
+          location_detail: record.location_detail,
+          category: record.category,
+          priority: record.priority,
+          description: record.description,
+          created_at: new Date().toLocaleString("es-MX")
+        };
+
+        emailjs.send("service_yhrs7k6", "template_647xar8", templateParams)
+          .then(() => {
+            console.log("Correo enviado exitosamente vía EmailJS.");
+          }, (err) => {
+            console.error("Error al enviar el correo con EmailJS:", err);
+          });
+
+        document.getElementById("generated-ticket").textContent = ticketId;
         document.getElementById("ticket-result").classList.remove("hidden");
+
         form.reset();
         document.getElementById("evidence-preview").classList.add("hidden");
         imagenBase64 = "";
-        showMessage("Reporte enviado con éxito.", "success");
+        showMessage("Tu reporte fue registrado correctamente, se generó el folio y se ha enviado la notificación por correo.", "success");
       } else {
-        showMessage("Error al enviar el reporte.", "error");
+        showMessage("No se pudo registrar el reporte. Verifica tu conexión e inténtalo nuevamente.", "error");
       }
+      submitButton.disabled = false;
     });
 
-    document.getElementById("ticket-search").addEventListener("input", e => { searchTerm = e.target.value.toLowerCase(); renderTickets(); });
-    document.getElementById("status-filter").addEventListener("change", e => { selectedStatus = e.target.value; renderTickets(); });
+    document.getElementById("ticket-search").addEventListener("input", event => {
+      searchTerm = event.target.value.trim().toLowerCase();
+      renderTickets();
+    });
 
-    // Lógica del Chatbot Juanito
-    const chatMessages = document.getElementById("chat-messages");
+    document.getElementById("status-filter").addEventListener("change", event => {
+      selectedStatus = event.target.value;
+      renderTickets();
+    });
+
+    function botReply(message) {
+      const value = message.toLowerCase();
+      if (value.includes("prioridad") || value.includes("urgente")) {
+        return "Soy Juanito. Elige prioridad alta si existe riesgo de accidente, daño eléctrico, filtración activa o si el espacio no puede usarse.";
+      }
+      if (value.includes("seguimiento") || value.includes("estado") || value.includes("folio")) {
+        return "Guarda tu folio SIMMEE y búscalo en el tablero. 'En revisión' indica que llegó tu reporte; 'En proceso' que ya se atiende y 'Atendido' que concluyó.";
+      }
+      if (value.includes("descrip") || value.includes("redact") || value.includes("detalle")) {
+        return "Incluye qué objeto está afectado, el daño observable, desde cuándo ocurre y la ubicación exacta.";
+      }
+      return "Puedo ayudarte a mejorar la descripción, elegir la prioridad, explicar qué ubicación registrar o revisar el seguimiento de tu folio.";
+    }
+
+    function appendChat(text, type) {
+      const message = document.createElement("div");
+      message.className = (type === "user" ? "chat-bubble-user ml-8" : "chat-bubble-bot mr-3") + " p-3 text-sm";
+      message.textContent = text;
+      const messages = document.getElementById("chat-messages");
+      messages.appendChild(message);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function askBot(text) {
+      if (!text.trim()) return;
+      appendChat(text, "user");
+      window.setTimeout(() => appendChat(botReply(text), "bot"), 220);
+    }
+
+    document.getElementById("chat-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const input = document.getElementById("chat-input");
+      askBot(input.value);
+      input.value = "";
+    });
+
+    document.querySelectorAll(".chat-topic").forEach(button => {
+      button.addEventListener("click", () => {
+        const topic = button.dataset.chatTopic;
+        const message = topic === "descripcion" ? "Ayúdame con la descripción" : topic === "prioridad" ? "¿Qué prioridad debo elegir?" : "¿Cómo doy seguimiento a mi folio?";
+        askBot(message);
+      });
+    });
+
+    const chatPanel = document.getElementById("juanito-panel");
+    const chatLauncher = document.getElementById("chat-launcher");
+    const closeChat = document.getElementById("close-chat");
     const chatInput = document.getElementById("chat-input");
-    const chatSend = document.getElementById("chat-send");
 
-    function appendMessage(sender, text) {
-      const div = document.createElement("div");
-      div.className = sender === 'user' ? 'text-right' : 'text-left';
-      div.innerHTML = `<div class="inline-block p-2.5 rounded shadow-sm text-sm max-w-[85%] ${sender === 'user' ? 'bg-[#6b1531] text-white' : 'bg-white border border-stone-200 text-stone-800'}">${text}</div>`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    function setChatOpen(open) {
+      chatPanel.classList.toggle("is-open", open);
+      chatLauncher.setAttribute("aria-expanded", String(open));
+      if (open) window.setTimeout(() => chatInput.focus(), 240);
     }
 
-    function handleChat() {
-      const txt = chatInput.value.trim().toLowerCase();
-      if (!txt) return;
-      appendMessage('user', chatInput.value.trim());
-      chatInput.value = "";
-
-      setTimeout(() => {
-        let reply = "Entiendo. Recuerda llenar todos los campos obligatorios y adjuntar tu foto de evidencia para que el reporte sea atendido rápidamente.";
-        if (txt.includes('foto') || txt.includes('evidencia')) {
-          reply = "Para que la fotografía sea válida como evidencia, súbela en formato JPG o PNG. Al descargar el Excel como administrador, aparecerá incrustada automáticamente.";
-        } else if (txt.includes('folio') || txt.includes('ticket')) {
-          reply = "Una vez que envíes tu reporte, se generará un número de folio único en la sección de constancia.";
-        } else if (txt.includes('hola') || txt.includes('buenos')) {
-          reply = "¡Hola! ¿En qué puedo apoyarte hoy con tu registro en SIMMEE?";
-        }
-        appendMessage('bot', reply);
-      }, 500);
-    }
-
-    chatSend.addEventListener("click", handleChat);
-    chatInput.addEventListener("keypress", (e) => { if (e.key === 'Enter') handleChat(); });
+    chatLauncher.addEventListener("click", () => setChatOpen(!chatPanel.classList.contains("is-open")));
+    closeChat.addEventListener("click", () => setChatOpen(false));
 
     document.addEventListener("DOMContentLoaded", async () => {
       if (window.lucide) lucide.createIcons();
-      await window.dataSdk.init({
-        onDataChanged(data) {
-          records.clear();
-          data.forEach(item => records.set(item.__backendId, item));
-          renderTickets();
-        }
-      });
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        showMessage("No fue posible conectar con el sistema de reportes. Intenta nuevamente.", "error");
+      }
     });
   </script>
 </body>
