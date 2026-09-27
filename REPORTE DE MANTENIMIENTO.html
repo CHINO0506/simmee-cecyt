@@ -73,14 +73,7 @@
     .priority-media { color: #875600; background: #fff4d7; }
     .priority-baja { color: #215f44; background: #e2f4e9; }
 
-    /* Estilos para el botón de Excel */
-    .btn-excel-disabled {
-      background: #a39b98 !important;
-      color: #e5e0dc !important;
-      cursor: not-allowed !important;
-      opacity: 0.6;
-    }
-
+    /* Estilo activo por defecto para el botón de Excel */
     .btn-excel-enabled {
       background: #6b1531 !important;
       color: #ffffff !important;
@@ -185,18 +178,18 @@
     </div>
    </section>
 
-   <!-- PANEL EXCLUSIVO ADMINISTRADOR -->
+   <!-- PANEL DE ADMINISTRADOR -->
    <section id="admin-panel" class="hidden w-full max-w-7xl mx-auto px-5 pt-8">
      <div class="p-5 bg-amber-50 border border-amber-200 rounded-md shadow-sm">
        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
          <div>
            <p class="font-bold text-amber-900 text-lg">Panel de Control Administrador</p>
-           <p class="text-xs text-amber-800">Para habilitar la descarga del Excel, debes adjuntar un archivo de respaldo primero.</p>
+           <p class="text-xs text-amber-800">El botón de descarga de Excel está activo permanentemente.</p>
          </div>
          
-         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-           <input type="file" id="admin-file-upload" class="text-xs text-stone-600 border border-stone-300 rounded p-1 bg-white">
-           <button id="export-excel" disabled class="btn-excel-disabled px-4 py-2 rounded-md text-sm font-bold transition-all">
+         <div>
+           <!-- Botón activo por defecto (sin atributo disabled) -->
+           <button id="export-excel" class="btn-excel-enabled px-4 py-2 rounded-md text-sm font-bold transition-all">
              Descargar Excel (.csv)
            </button>
          </div>
@@ -279,7 +272,7 @@
            <textarea id="description" class="form-control min-h-28" required minlength="20"></textarea>
           </div>
           <div class="sm:col-span-2">
-           <label class="field-label" for="evidence-file">Fotografía de evidencia</label> 
+           <label class="field-label" for="evidence-file">Fotografía de evidencia (Opcional)</label> 
            <input id="evidence-file" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
            <div id="evidence-preview" class="hidden mt-3">
             <img id="evidence-preview-image" class="max-h-48 w-auto rounded-md border border-stone-200 object-contain" alt="Vista previa">
@@ -350,7 +343,6 @@
        <p class="ticket-id text-xs font-bold text-[#6b1531]"></p>
        <span class="ticket-status-badge rounded-full px-2.5 py-1 text-xs font-bold bg-[#efe9de] text-[#5f513f]"></span>
        
-       <!-- Menú desplegable interactivo exclusivo del Administrador -->
        <select class="ticket-status-select hidden text-xs font-bold rounded p-1 border border-stone-300 bg-stone-50">
          <option value="En revisión">En revisión</option>
          <option value="En proceso">En proceso</option>
@@ -373,7 +365,6 @@
     let selectedStatus = "all";
     let imagenBase64 = "";
     let isAdminMode = false;
-    let isFileUploaded = false;
 
     const form = document.getElementById("report-form");
     const submitButton = document.getElementById("submit-button");
@@ -382,12 +373,10 @@
     const emptyState = document.getElementById("empty-state");
     const ticketCount = document.getElementById("ticket-count");
     
-    // Controles Administrador
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
     const toggleAdminBtn = document.getElementById("toggle-admin-btn");
     const adminPanel = document.getElementById("admin-panel");
-    const adminFileUpload = document.getElementById("admin-file-upload");
 
     // Acceso / Cierre de modo Administrador
     toggleAdminBtn.addEventListener("click", () => {
@@ -413,34 +402,50 @@
       }
     });
 
-    // Detectar archivo subido por el administrador para activar descarga Excel
-    adminFileUpload.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        isFileUploaded = true;
-        exportButton.disabled = false;
-        exportButton.classList.remove("btn-excel-disabled");
-        exportButton.classList.add("btn-excel-enabled");
-        exportMessage.textContent = `Archivo "${file.name}" cargado. Descarga de Excel habilitada.`;
-      } else {
-        isFileUploaded = false;
-        exportButton.disabled = true;
-        exportButton.classList.remove("btn-excel-enabled");
-        exportButton.classList.add("btn-excel-disabled");
-        exportMessage.textContent = "Debes subir un archivo para activar la descarga.";
-      }
-    });
+    // Gestión de la imagen Base64 al cargar archivo en el formulario
+    document.getElementById("evidence-file").addEventListener("change", event => {
+      const file = event.target.files[0];
+      const preview = document.getElementById("evidence-preview");
+      const image = document.getElementById("evidence-preview-image");
 
-    // Exportar datos a Excel / CSV con decodificación/formato accesible de imagen
-    exportButton.addEventListener("click", () => {
-      if (!isFileUploaded) {
-        alert("Por favor sube un archivo antes de realizar la descarga.");
+      if (!file) {
+        preview.classList.add("hidden");
+        image.removeAttribute("src");
+        imagenBase64 = "";
         return;
       }
 
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 800;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          } else {
+            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          imagenBase64 = canvas.toDataURL("image/jpeg", 0.75);
+          image.src = imagenBase64;
+          preview.classList.remove("hidden");
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Exportar datos a Excel / CSV con decodificación de imagen Base64 mediante enlace
+    exportButton.addEventListener("click", () => {
       const reportes = Array.from(records.values());
       if (reportes.length === 0) {
-        exportMessage.textContent = "No hay reportes cargados para descargar.";
+        exportMessage.textContent = "Aún no hay reportes registrados para exportar.";
         return;
       }
 
@@ -451,10 +456,8 @@
         reportes.forEach(r => {
           const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
           
-          // Formateo de la celda de la imagen Base64
           let imagenCelda = "Sin fotografía";
           if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
-            // Se incrusta una fórmula que Excel interpreta para hacer utilizable/enlazable la imagen
             imagenCelda = `"=HIPERVINCULO(""${r.evidence_base64}"", ""Ver Fotografía Base64"")"`;
           }
 
@@ -499,45 +502,6 @@
       formMessage.className = `text-sm rounded-md px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`;
       formMessage.classList.remove("hidden");
     }
-
-    // Compresión de imagen Base64 al adjuntar
-    document.getElementById("evidence-file").addEventListener("change", event => {
-      const file = event.target.files[0];
-      const preview = document.getElementById("evidence-preview");
-      const image = document.getElementById("evidence-preview-image");
-
-      if (!file) {
-        preview.classList.add("hidden");
-        image.removeAttribute("src");
-        imagenBase64 = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const maxDim = 800;
-          let w = img.width;
-          let h = img.height;
-          if (w > h) {
-            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          } else {
-            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
-          imagenBase64 = canvas.toDataURL("image/jpeg", 0.75);
-          image.src = imagenBase64;
-          preview.classList.remove("hidden");
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
 
     function renderTickets() {
       const visible = Array.from(records.values())
