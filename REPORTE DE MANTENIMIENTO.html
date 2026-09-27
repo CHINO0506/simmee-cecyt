@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es-MX"><head>
+<html lang="es-MX">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIMMEE — Sistema para Monitoreo de Mobiliario y Espacios Educativos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&amp;family=Source+Sans+Pro:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Source+Sans+Pro:wght@400;600;700;900&display=swap" rel="stylesheet">
   
   <!-- SDK de EmailJS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -56,11 +57,6 @@
       box-shadow: 0 0 0 3px rgba(107,21,49,.14);
     }
 
-    .form-control.invalid {
-      border-color: #b42318;
-      background: #fff7f5;
-    }
-
     .field-label {
       display: block;
       margin-bottom: .35rem;
@@ -73,225 +69,23 @@
       transition: transform .2s, box-shadow .2s;
     }
 
-    .ticket-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(58,34,40,.10);
-    }
-
     .priority-alta { color: #9b1c1c; background: #fde8e7; }
     .priority-media { color: #875600; background: #fff4d7; }
     .priority-baja { color: #215f44; background: #e2f4e9; }
 
-    .chat-bubble-user {
-      background: var(--wine);
-      color: #fff;
-      border-radius: 16px 16px 3px 16px;
+    /* Estilos para el botón de Excel */
+    .btn-excel-disabled {
+      background: #a39b98 !important;
+      color: #e5e0dc !important;
+      cursor: not-allowed !important;
+      opacity: 0.6;
     }
 
-    .chat-bubble-bot {
-      background: var(--cream);
-      color: #35252a;
-      border-radius: 16px 16px 16px 3px;
-    }
-
-    .chat-panel {
-      transform: translateY(18px) scale(.96);
-      transform-origin: bottom right;
-      opacity: 0;
-      pointer-events: none;
-      max-height: calc(82 * min(var(--vh, 1vh), 1vh));
-      display: flex;
-      flex-direction: column;
-      transition: opacity .22s ease, transform .22s ease;
-    }
-
-    .chat-panel.is-open {
-      transform: translateY(0) scale(1);
+    .btn-excel-enabled {
+      background: #6b1531 !important;
+      color: #ffffff !important;
+      cursor: pointer !important;
       opacity: 1;
-      pointer-events: auto;
-    }
-
-    .juanito-avatar {
-      position: relative;
-      overflow: hidden;
-      flex: 0 0 auto;
-      min-height: 8.5rem;
-      aspect-ratio: .68;
-      border-radius: 2.2rem 2.2rem 1.4rem 1.4rem;
-      background: linear-gradient(155deg, #63d8f2 0%, #b7f2f7 43%, #ffcf4a 44%, #ff8c42 100%);
-      border: 3px solid #fff;
-      box-shadow: inset 7px 7px 0 rgba(255,255,255,.42), inset -8px -12px 0 rgba(217,74,62,.22), 0 10px 18px rgba(70,16,34,.22);
-      animation: avatarBob 2.8s ease-in-out infinite;
-    }
-
-    .avatar-face {
-      position: absolute;
-      width: 48%;
-      height: 31%;
-      left: 26%;
-      top: 13%;
-      border-radius: 45% 45% 48% 48%;
-      background: #f3a36f;
-      border: 3px solid #7b2942;
-      box-shadow: inset 4px 5px 0 rgba(255,220,177,.35), 0 5px 8px rgba(70,16,34,.2);
-      z-index: 2;
-    }
-
-    .avatar-hair {
-      position: absolute;
-      z-index: 3;
-      width: 58%;
-      height: 19%;
-      left: 21%;
-      top: 7%;
-      border-radius: 60% 65% 28% 25%;
-      background: #54233c;
-      border: 3px solid #7b2942;
-      transform: rotate(-6deg);
-    }
-
-    .avatar-eye {
-      position: absolute;
-      top: 42%;
-      width: 13%;
-      height: 13%;
-      border-radius: 50%;
-      background: #302238;
-      border: 2px solid #fff;
-      animation: avatarBlink 4.5s infinite;
-    }
-    .avatar-eye-left { left: 21%; }
-    .avatar-eye-right { right: 21%; }
-    .avatar-smile {
-      position: absolute;
-      left: 33%;
-      top: 65%;
-      width: 34%;
-      height: 15%;
-      border-bottom: 3px solid #7b2942;
-      border-radius: 0 0 50% 50%;
-    }
-    .avatar-body {
-      position: absolute;
-      z-index: 1;
-      width: 70%;
-      height: 51%;
-      left: 15%;
-      bottom: -3%;
-      border-radius: 35% 35% 12% 12%;
-      background: #63b9df;
-      border: 3px solid #7b2942;
-      border-top: 5px solid #ffe06a;
-      box-shadow: inset 0 -1.5rem 0 rgba(40,93,151,.28);
-    }
-
-    .avatar-body::before,
-    .avatar-body::after {
-      content: "";
-      position: absolute;
-      top: 16%;
-      width: 19%;
-      height: 62%;
-      border-radius: 999px;
-      background: #c9825d;
-      border: 3px solid #461022;
-    }
-
-    .avatar-body::before { left: -17%; transform: rotate(15deg); }
-    .avatar-body::after { right: -17%; transform: rotate(-15deg); }
-
-    .avatar-illustration { position: relative; overflow: hidden; flex: 0 0 auto; min-height: 8.5rem; aspect-ratio: .68; border-radius: 2.2rem 2.2rem 1.4rem 1.4rem; background: linear-gradient(155deg,#63d8f2 0%,#b7f2f7 43%,#ffcf4a 44%,#ff8c42 100%); border: 3px solid #fff; box-shadow: inset 7px 7px 0 rgba(255,255,255,.42),inset -8px -12px 0 rgba(217,74,62,.22),0 10px 18px rgba(70,16,34,.22); }
-    .avatar-illustration .avatar-emblem { position:absolute; left:0;right:0;top:40%;z-index:2;color:#fff;font-size:.7rem;font-weight:900;text-align:center;text-shadow:0 1px 3px #461022; }
-    .avatar-illustration.mini-avatar { width:64px;height:64px;min-height:0;aspect-ratio:auto; }
-    .juanito-launcher {
-      animation: juanitoFloat 3.2s ease-in-out infinite;
-      box-shadow: 0 15px 34px rgba(70,16,34,.32);
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .juanito-launcher .juanito-avatar {
-      animation: avatarGreeting 2.8s ease-in-out infinite;
-      transform-origin: 50% 85%;
-    }
-
-    .juanito-speech {
-      position: relative;
-      max-width: 14rem;
-      padding: .7rem .95rem;
-      border: 2px solid var(--gold);
-      border-radius: 1rem 1rem .25rem 1rem;
-      background: #fffdf9;
-      color: var(--wine-dark);
-      font-weight: 700;
-      line-height: 1.15;
-      box-shadow: 0 10px 24px rgba(70,16,34,.2);
-      animation: speechPop 3.2s ease-in-out infinite;
-    }
-
-    .juanito-speech::after {
-      content: "";
-      position: absolute;
-      right: -.55rem;
-      bottom: .65rem;
-      width: 1rem;
-      height: 1rem;
-      background: #fffdf9;
-      border-right: 2px solid var(--gold);
-      border-top: 2px solid var(--gold);
-      transform: rotate(45deg);
-    }
-
-    .juanito-launcher:hover .juanito-avatar { animation-play-state: paused; }
-
-    .juanito-launcher:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 38px rgba(70,16,34,.42);
-    }
-
-    .reveal { animation: reveal .55s ease both; }
-
-    @keyframes reveal {
-      from { opacity: 0; transform: translateY(13px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes juanitoFloat {
-      0%, 100% { transform: translateY(0) rotate(-1deg); }
-      50% { transform: translateY(-5px) rotate(1deg); }
-    }
-
-    @keyframes avatarGreeting {
-      0%, 100% { transform: rotate(0deg) translateY(0); }
-      18% { transform: rotate(-7deg) translateY(-2px); }
-      36% { transform: rotate(8deg) translateY(-2px); }
-      54% { transform: rotate(-6deg) translateY(-1px); }
-      72% { transform: rotate(4deg) translateY(0); }
-    }
-
-    @keyframes speechPop {
-      0%, 78%, 100% { opacity: .72; transform: scale(.96) translateY(2px); }
-      12%, 65% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    @keyframes avatarBob {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50% { transform: translateY(-3px) rotate(2deg); }
-    }
-
-    @keyframes avatarBlink {
-      0%, 44%, 48%, 100% { transform: scaleY(1); }
-      46% { transform: scaleY(.12); }
-    }
-
-    .juanito-avatar:hover .avatar-face { animation: avatarWave .7s ease-in-out; }
-    @keyframes avatarWave {
-      0%, 100% { transform: rotate(0); }
-      35% { transform: rotate(-7deg); }
-      70% { transform: rotate(6deg); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .juanito-launcher { animation: none; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
@@ -300,7 +94,7 @@
   <!-- Módulos de Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBbz_Lu6wA5P6sn1K6JfsVQFVBreujL3sw",
@@ -341,245 +135,245 @@
           console.error("Error al guardar en Firebase:", error);
           return { isOk: false };
         }
+      },
+
+      async updateStatus(id, newStatus) {
+        try {
+          const docRef = doc(db, "reportes", id);
+          await updateDoc(docRef, { status: newStatus });
+          return { isOk: true };
+        } catch (error) {
+          console.error("Error al actualizar estado:", error);
+          return { isOk: false };
+        }
       }
     };
   </script>
- </head>
- <body data-template-id="__page-root" class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
-  <div class="top-stripe"></div><nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif"><a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a></nav>
-  <header data-template-id="site-header" class="canva-header bg-white border-b border-stone-200" style="background: rgb(255, 255, 255);">
+</head>
+<body data-template-id="__page-root" class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
+  <div class="top-stripe"></div>
+  <nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif; display: flex; justify-content: space-between; align-items: center;">
+    <a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a>
+    <button id="toggle-admin-btn" style="background:transparent; border:1px solid #6b1531; color:#6b1531; padding: 4px 10px; border-radius: 4px; font-weight:700; cursor:pointer;">Acceso Administrador</button>
+  </nav>
+
+  <header class="bg-white border-b border-stone-200">
    <div class="w-full max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3 min-w-0">
      <div class="w-16 h-16 shrink-0 rounded-full border-2 border-[#c9a227] bg-white overflow-hidden flex items-center justify-center">
-      <img data-template-id="site-logo" loading="lazy" class="canva-image w-full h-full object-contain p-1" src="WhatsApp Image 2026-09-26 at 5.30.05 PM.jpeg" alt="Logotipo del CECyT 7 Cuauhtémoc">
+      <img loading="lazy" class="w-full h-full object-contain p-1" src="WhatsApp Image 2026-09-26 at 5.30.05 PM.jpeg" alt="Logotipo del CECyT 7 Cuauhtémoc">
      </div>
      <div class="min-w-0">
-      <p data-template-id="header-kicker" class="canva-text text-xs tracking-[.16em] uppercase font-bold" style="color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.08rem;">Instituto Politécnico Nacional</p>
-      <p data-template-id="header-name" class="canva-text font-bold leading-tight" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">SIMMEE</p>
+      <p class="text-xs tracking-[.16em] uppercase font-bold" style="color: rgb(107, 21, 49);">Instituto Politécnico Nacional</p>
+      <p class="font-bold leading-tight" style="color: rgb(36, 31, 32);">SIMMEE</p>
      </div>
     </div>
     <div class="hidden sm:flex items-center gap-2 text-sm text-[#6b1531] font-semibold">
-     <i data-lucide="shield-check" class="w-4 h-4"></i> <span data-template-id="header-status" class="canva-text" style="color: rgb(107, 21, 49); font-weight: 600; font-style: normal; font-size: 16px;">Sistema de seguimiento activo</span>
+     <i data-lucide="shield-check" class="w-4 h-4"></i> <span>Sistema de seguimiento activo</span>
     </div>
    </div>
   </header>
+
   <main>
-   <section data-template-id="hero-section" class="canva-banner relative overflow-hidden" style="background: linear-gradient(115deg, rgb(70, 16, 34), rgb(107, 21, 49));">
+   <section class="relative overflow-hidden" style="background: linear-gradient(115deg, rgb(70, 16, 34), rgb(107, 21, 49));">
     <div class="hero-overlay absolute inset-0"></div>
     <div class="relative w-full max-w-7xl mx-auto px-5 py-14 md:py-20">
-     <div class="max-w-3xl reveal">
-      <div data-template-id="hero-tag" class="canva-tag inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border border-[#c9a227]" style="background: rgb(107, 21, 49); color: rgb(230, 198, 107);">
-       <i data-lucide="armchair" class="w-3.5 h-3.5"></i> <span data-template-id="hero-tag-text" class="canva-text" style="color: rgb(230, 198, 107); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.06rem;">Cuidemos nuestros espacios educativos</span>
-      </div>
-      <h1 data-template-id="hero-title" class="canva-text display-font mt-5 font-bold leading-tight" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 40px; line-height: 1.1;">Sistema para Monitoreo de Mobiliario y Espacios Educativos</h1>
-      <p data-template-id="hero-description" class="canva-text mt-5 max-w-2xl text-lg leading-relaxed" style="color: rgb(247, 234, 216); font-weight: 400; font-style: normal; font-size: 19px; line-height: 1.5;">SIMMEE facilita el registro, monitoreo y seguimiento de incidencias en mobiliario, equipo e infraestructura de los espacios educativos.</p>
-      <div class="mt-7 flex flex-wrap gap-3">
-       <div data-template-id="hero-point-one" class="canva-tag rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2" style="background: rgb(255, 255, 255); color: rgb(107, 21, 49);">
-        <i data-lucide="badge-check" class="w-4 h-4"></i> <span data-template-id="hero-point-one-text" class="canva-text" style="color: rgb(107, 21, 49); font-weight: 600; font-style: normal; font-size: 16px;">Validación de datos del reportante</span>
-       </div>
-       <div data-template-id="hero-point-two" class="canva-tag rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2" style="background: rgb(201, 162, 39); color: rgb(70, 16, 34);">
-        <i data-lucide="eye" class="w-4 h-4"></i> <span data-template-id="hero-point-two-text" class="canva-text" style="color: rgb(70, 16, 34); font-weight: 600; font-style: normal; font-size: 16px;">Seguimiento visible de incidencias</span>
-       </div>
-      </div>
+     <div class="max-w-3xl">
+      <h1 class="display-font mt-5 font-bold leading-tight text-white text-4xl">Sistema para Monitoreo de Mobiliario y Espacios Educativos</h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-[#f7ead8]">SIMMEE facilita el registro, monitoreo y seguimiento de incidencias en mobiliario, equipo e infraestructura.</p>
      </div>
     </div>
    </section>
-   <section class="w-full max-w-7xl mx-auto px-5 py-10 md:py-14">
+
+   <!-- PANEL EXCLUSIVO ADMINISTRADOR -->
+   <section id="admin-panel" class="hidden w-full max-w-7xl mx-auto px-5 pt-8">
+     <div class="p-5 bg-amber-50 border border-amber-200 rounded-md shadow-sm">
+       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+         <div>
+           <p class="font-bold text-amber-900 text-lg">Panel de Control Administrador</p>
+           <p class="text-xs text-amber-800">Para habilitar la descarga del Excel, debes adjuntar un archivo de respaldo primero.</p>
+         </div>
+         
+         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+           <input type="file" id="admin-file-upload" class="text-xs text-stone-600 border border-stone-300 rounded p-1 bg-white">
+           <button id="export-excel" disabled class="btn-excel-disabled px-4 py-2 rounded-md text-sm font-bold transition-all">
+             Descargar Excel (.csv)
+           </button>
+         </div>
+       </div>
+       <p id="export-message" role="status" class="text-right text-xs mt-2 text-amber-900 font-semibold"></p>
+     </div>
+   </section>
+
+   <section class="w-full max-w-7xl mx-auto px-5 py-10">
     <div class="grid lg:grid-cols-[1.08fr_.92fr] gap-7 items-start">
      <div class="space-y-7">
-      <section data-template-id="guide-card" class="canva-card bg-white border border-stone-200 p-6 md:p-7 shadow-sm" style="background: rgb(255, 255, 255);">
-       <div class="flex items-start gap-4">
-        <div class="w-11 h-11 shrink-0 rounded-full bg-[#f2e6d5] text-[#6b1531] flex items-center justify-center">
-         <i data-lucide="route" class="w-5 h-5"></i>
-        </div>
-        <div>
-         <h2 data-template-id="guide-title" class="canva-text font-bold" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 24px;">¿Cómo funciona?</h2>
-         <p data-template-id="guide-description" class="canva-text mt-1 text-stone-600" style="color: rgb(95, 90, 84); font-weight: 400; font-style: normal; font-size: 16px;">Sigue estos tres pasos antes de levantar tu reporte.</p>
-        </div>
-       </div>
-       <ol class="mt-6 grid sm:grid-cols-3 gap-4">
-        <li class="rounded-md border border-stone-200 bg-[#fffdf9] p-4"><span class="w-7 h-7 rounded-full bg-[#6b1531] text-white flex items-center justify-center font-bold text-xs">1</span> <p data-template-id="guide-step-one" class="canva-text mt-3 text-sm" style="color: rgb(79, 73, 66); font-weight: 400; font-style: normal; font-size: 15px;">Valida tus datos de contacto con nombre, correo y boleta o número de empleado.</p></li>
-        <li class="rounded-md border border-stone-200 bg-[#fffdf9] p-4"><span class="w-7 h-7 rounded-full bg-[#6b1531] text-white flex items-center justify-center font-bold text-xs">2</span> <p data-template-id="guide-step-two" class="canva-text mt-3 text-sm" style="color: rgb(79, 73, 66); font-weight: 400; font-style: normal; font-size: 15px;">Describe el recurso afectado e indica con claridad la unidad y ubicación.</p></li>
-        <li class="rounded-md border border-stone-200 bg-[#fffdf9] p-4"><span class="w-7 h-7 rounded-full bg-[#6b1531] text-white flex items-center justify-center font-bold text-xs">3</span> <p data-template-id="guide-step-three" class="canva-text mt-3 text-sm" style="color: rgb(79, 73, 66); font-weight: 400; font-style: normal; font-size: 15px;">Guarda tu folio SIMMEE y consulta el estado del reporte en el tablero.</p></li>
-       </ol>
-      </section>
-      <section data-template-id="report-panel" class="canva-panel bg-white border border-stone-200 shadow-sm p-6 md:p-8" style="background: rgb(255, 255, 255);">
-       <div class="flex items-start gap-4">
-        <div class="shrink-0 w-11 h-11 rounded-full bg-[#f2e6d5] text-[#6b1531] flex items-center justify-center">
-         <i data-lucide="clipboard-pen-line" class="w-5 h-5"></i>
-        </div>
-        <div>
-         <h2 data-template-id="form-title" class="canva-text font-bold" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 24px;">Levanta un reporte</h2>
-         <p data-template-id="form-description" class="canva-text mt-1 text-stone-600" style="color: rgb(95, 90, 84); font-weight: 400; font-style: normal; font-size: 16px;">Registra la incidencia con información precisa para facilitar su revisión y atención.</p>
-        </div>
-       </div>
-       <form id="report-form" class="mt-7 space-y-5" novalidate="">
+      <section class="bg-white border border-stone-200 shadow-sm p-6 md:p-8">
+       <h2 class="font-bold text-2xl text-stone-800">Levanta un reporte</h2>
+       <form id="report-form" class="mt-7 space-y-5" novalidate>
         <fieldset>
-         <legend data-template-id="access-legend" class="canva-text font-bold text-[#6b1531] mb-3" style="color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px;">Validación de la persona reportante</legend>
+         <legend class="font-bold text-[#6b1531] mb-3">Persona reportante</legend>
          <div class="grid sm:grid-cols-2 gap-4">
           <div>
-           <label data-template-id="name-label" class="canva-text field-label" for="reporter-name" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Nombre completo</label> <input id="reporter-name" class="form-control" type="text" required="" autocomplete="name">
+           <label class="field-label" for="reporter-name">Nombre completo</label> 
+           <input id="reporter-name" class="form-control" type="text" required>
           </div>
           <div>
-           <label data-template-id="email-label" class="canva-text field-label" for="reporter-email" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Correo de contacto</label> <input id="reporter-email" class="form-control" type="email" required="" autocomplete="email">
+           <label class="field-label" for="reporter-email">Correo de contacto</label> 
+           <input id="reporter-email" class="form-control" type="email" required>
           </div>
           <div>
-           <label data-template-id="role-label" class="canva-text field-label" for="reporter-role" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Rol dentro de la comunidad</label> <select id="reporter-role" class="form-control" required=""> <option value="">Selecciona tu rol</option> <option value="Estudiante">Estudiante</option> <option value="Docente">Docente</option> <option value="Personal de apoyo">Personal de apoyo</option> </select>
+           <label class="field-label" for="reporter-role">Rol</label> 
+           <select id="reporter-role" class="form-control" required> 
+             <option value="">Selecciona tu rol</option> 
+             <option value="Estudiante">Estudiante</option> 
+             <option value="Docente">Docente</option> 
+             <option value="Personal de apoyo">Personal de apoyo</option> 
+           </select>
           </div>
           <div>
-           <label data-template-id="id-label" class="canva-text field-label" for="reporter-id" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Boleta o número de empleado</label> <input id="reporter-id" class="form-control" type="text" required="" minlength="6" autocomplete="off">
+           <label class="field-label" for="reporter-id">Boleta / N° Empleado</label> 
+           <input id="reporter-id" class="form-control" type="text" required minlength="6">
           </div>
          </div>
         </fieldset>
-        <div class="h-px bg-stone-200"></div>
+        
         <fieldset>
-         <legend data-template-id="incident-legend" class="canva-text font-bold text-[#6b1531] mb-3" style="color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px;">Información de la incidencia</legend>
+         <legend class="font-bold text-[#6b1531] mb-3">Detalles de la incidencia</legend>
          <div class="grid sm:grid-cols-2 gap-4">
           <div>
-           <label data-template-id="unit-label" class="canva-text field-label" for="unit" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Unidad académica</label> <input id="unit" class="form-control" type="text" required="">
+           <label class="field-label" for="unit">Unidad académica</label> 
+           <input id="unit" class="form-control" type="text" required>
           </div>
           <div>
-           <label data-template-id="location-type-label" class="canva-text field-label" for="location-type" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Tipo de espacio</label> <select id="location-type" class="form-control" required=""> <option value="">Selecciona un espacio</option> <option value="Aula">Aula</option> <option value="Laboratorio">Laboratorio</option> <option value="Taller">Taller</option> <option value="Área común">Área común</option> <option value="Oficina">Oficina</option> </select>
+           <label class="field-label" for="location-type">Tipo de espacio</label> 
+           <select id="location-type" class="form-control" required> 
+             <option value="Aula">Aula</option> 
+             <option value="Laboratorio">Laboratorio</option> 
+             <option value="Taller">Taller</option> 
+             <option value="Área común">Área común</option> 
+           </select>
           </div>
           <div>
-           <label data-template-id="location-detail-label" class="canva-text field-label" for="location-detail" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Ubicación específica</label> <input id="location-detail" class="form-control" type="text" required="">
+           <label class="field-label" for="location-detail">Ubicación específica</label> 
+           <input id="location-detail" class="form-control" type="text" required>
           </div>
           <div>
-           <label data-template-id="category-label" class="canva-text field-label" for="category" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Categoría del reporte</label> <select id="category" class="form-control" required=""> <option value="">Selecciona una categoría</option> <option value="Mobiliario">Mobiliario</option> <option value="Equipo">Equipo</option> <option value="Infraestructura">Infraestructura</option> <option value="Materiales">Materiales</option> </select>
+           <label class="field-label" for="category">Categoría</label> 
+           <select id="category" class="form-control" required> 
+             <option value="Mobiliario">Mobiliario</option> 
+             <option value="Equipo">Equipo</option> 
+             <option value="Infraestructura">Infraestructura</option> 
+           </select>
           </div>
           <div>
-           <label data-template-id="priority-label" class="canva-text field-label" for="priority" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Prioridad</label> <select id="priority" class="form-control" required=""> <option value="Media">Media</option> <option value="Alta">Alta</option> <option value="Baja">Baja</option> </select>
+           <label class="field-label" for="priority">Prioridad</label> 
+           <select id="priority" class="form-control" required> 
+             <option value="Media">Media</option> 
+             <option value="Alta">Alta</option> 
+             <option value="Baja">Baja</option> 
+           </select>
           </div>
           <div class="sm:col-span-2">
-           <label data-template-id="description-label" class="canva-text field-label" for="description" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Describe el problema</label> <textarea id="description" class="form-control resize-y min-h-28" required="" minlength="20" maxlength="700"></textarea>
+           <label class="field-label" for="description">Descripción</label> 
+           <textarea id="description" class="form-control min-h-28" required minlength="20"></textarea>
           </div>
           <div class="sm:col-span-2">
-           <label data-template-id="evidence-label" class="canva-text field-label" for="evidence-file" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Fotografía de evidencia</label> <input id="evidence-file" class="form-control" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="evidence-helper">
-           <p id="evidence-helper" data-template-id="evidence-helper" class="canva-text mt-2 text-sm text-stone-600" style="color: rgb(95, 90, 84); font-weight: 400; font-style: normal; font-size: 14px;">Adjunta una imagen clara del daño (JPG, PNG o WebP). La vista previa se muestra antes de enviar el reporte.</p>
+           <label class="field-label" for="evidence-file">Fotografía de evidencia</label> 
+           <input id="evidence-file" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
            <div id="evidence-preview" class="hidden mt-3">
-            <img id="evidence-preview-image" class="max-h-48 w-auto rounded-md border border-stone-200 object-contain" alt="Vista previa de la evidencia fotográfica">
+            <img id="evidence-preview-image" class="max-h-48 w-auto rounded-md border border-stone-200 object-contain" alt="Vista previa">
            </div>
           </div>
          </div>
         </fieldset>
-        <p id="form-message" class="hidden text-sm rounded-md px-3 py-2" aria-live="polite"></p><button id="submit-button" data-template-id="submit-button" class="canva-button w-full sm:w-auto inline-flex justify-center items-center gap-2 px-5 py-3 rounded-md font-bold transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[#6b1531]/20" type="submit" style="background: rgb(107, 21, 49); color: rgb(255, 255, 255);"> <i data-lucide="send" class="w-4 h-4"></i> <span data-template-id="submit-button-text" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Registrar reporte y generar folio</span> </button>
+        
+        <p id="form-message" class="hidden text-sm rounded-md px-3 py-2" aria-live="polite"></p>
+        <button id="submit-button" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-5 py-3 rounded-md font-bold text-white bg-[#6b1531]" type="submit"> 
+          <i data-lucide="send" class="w-4 h-4"></i> <span>Registrar reporte</span> 
+        </button>
        </form>
       </section>
      </div>
+
      <aside>
-      <section data-template-id="ticket-confirmation" class="canva-card bg-[#6b1531] text-white p-6 shadow-lg" style="background: rgb(107, 21, 49); color: rgb(255, 255, 255);">
-       <div class="flex gap-4">
-        <div class="w-11 h-11 shrink-0 rounded-full bg-[#c9a227] text-[#461022] flex items-center justify-center">
-         <i data-lucide="ticket-check" class="w-5 h-5"></i>
-        </div>
-        <div>
-         <h2 data-template-id="confirmation-title" class="canva-text font-bold" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 24px;">Constancia de reporte</h2>
-         <p data-template-id="confirmation-description" class="canva-text mt-2 text-[#f5e8d7] leading-relaxed" style="color: rgb(245, 232, 215); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Al registrar tu reporte recibirás un folio SIMMEE. Consérvalo para consultarlo en el tablero de monitoreo.</p>
-         <div id="ticket-result" class="hidden mt-5 rounded-md bg-white/10 border border-white/20 p-4">
-          <p data-template-id="ticket-result-label" class="canva-text text-xs uppercase tracking-widest text-[#e6c66b] font-bold" style="color: rgb(230, 198, 107); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.08rem;">Folio generado</p>
-          <p id="generated-ticket" class="mt-1 font-bold text-xl tracking-wide" aria-live="polite"></p>
-         </div>
-        </div>
+      <section class="bg-[#6b1531] text-white p-6 shadow-lg rounded">
+       <h2 class="font-bold text-xl">Constancia de reporte</h2>
+       <p class="mt-2 text-[#f5e8d7] text-sm">Conserva tu folio generado para consulta posterior.</p>
+       <div id="ticket-result" class="hidden mt-4 rounded bg-white/10 p-4 border border-white/20">
+        <p class="text-xs uppercase text-[#e6c66b] font-bold">Folio asignado</p>
+        <p id="generated-ticket" class="mt-1 font-bold text-xl tracking-wide"></p>
        </div>
       </section>
      </aside>
     </div>
    </section>
-   <section data-template-id="dashboard-section" class="canva-section bg-[#eeeae3] border-y border-stone-200" style="background: rgb(238, 234, 227);">
-    <div class="w-full max-w-7xl mx-auto px-5 py-10 md:py-14">
-     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+
+   <!-- TABLERO MONITOREO DE REPORTES -->
+   <section class="bg-[#eeeae3] border-y border-stone-200 py-10">
+    <div class="w-full max-w-7xl mx-auto px-5">
+     <div class="flex justify-between items-center">
+       <div>
+         <h2 class="font-bold text-2xl text-stone-800">Tablero de monitoreo</h2>
+         <p class="text-sm text-stone-600">Seguimiento en tiempo real del estado de reportes.</p>
+       </div>
+       <span id="ticket-count" class="text-sm font-semibold text-[#6b1531]">0 reportes</span>
+     </div>
+
+     <div class="bg-white mt-6 p-4 border border-stone-200 grid md:grid-cols-[1fr_220px] gap-4">
       <div>
-       <p data-template-id="dashboard-kicker" class="canva-text text-xs tracking-[.16em] uppercase font-bold text-[#6b1531]" style="color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.08rem;">Transparencia y seguimiento</p>
-       <h2 data-template-id="dashboard-title" class="canva-text mt-2 font-bold" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 24px;">Tablero de reportes SIMMEE</h2>
-       <p data-template-id="dashboard-description" class="canva-text mt-2 text-stone-600" style="color: rgb(95, 90, 84); font-weight: 400; font-style: normal; font-size: 16px;">Consulta las incidencias registradas y verifica el avance de su atención.</p>
+       <input id="ticket-search" class="form-control" type="search" placeholder="Buscar folio, ubicación, categoría...">
       </div>
-      <div class="flex items-center gap-2 text-sm font-semibold text-[#6b1531]">
-       <i data-lucide="list-checks" class="w-4 h-4"></i> <span id="ticket-count" aria-live="polite">0 reportes</span>
+      <div>
+       <select id="status-filter" class="form-control"> 
+         <option value="all">Todos los estados</option> 
+         <option value="En revisión">En revisión</option> 
+         <option value="En proceso">En proceso</option> 
+         <option value="Atendido">Atendido</option> 
+       </select>
       </div>
      </div>
-     <div style="display:flex;justify-content:flex-end;margin:18px 0 8px">
-  <button id="export-excel" type="button"
-    style="background:#6b1531; color:white; padding:10px 16px; border:0; border-radius:6px; cursor:pointer; font-weight:700; position:relative; z-index:10; pointer-events:auto;">
-    Descargar Excel (.csv)
-  </button>
-</div>
-<p id="export-message" role="status" aria-live="polite"
-  style="text-align:right;color:#5e5a5c;font-size:14px"></p>
-     <div data-template-id="filters-panel" class="canva-panel bg-white mt-7 p-4 border border-stone-200 grid md:grid-cols-[1fr_220px] gap-4" style="background: rgb(255, 255, 255);">
-      <div>
-       <label data-template-id="search-label" class="canva-text field-label" for="ticket-search" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Buscar reportes</label> <input id="ticket-search" class="form-control" type="search">
-      </div>
-      <div>
-       <label data-template-id="status-filter-label" class="canva-text field-label" for="status-filter" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 16px;">Filtrar por estado</label> <select id="status-filter" class="form-control"> <option value="all">Todos los estados</option> <option value="En revisión">En revisión</option> <option value="En proceso">En proceso</option> <option value="Atendido">Atendido</option> </select>
-      </div>
-     </div>
-     <div id="ticket-list" class="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
-     <div id="empty-state" data-template-id="empty-state" class="canva-panel mt-6 bg-white border border-dashed border-stone-300 py-12 px-6 text-center" style="background: rgb(255, 255, 255);">
-      <i data-lucide="inbox" class="w-8 h-8 mx-auto text-[#c9a227]"></i>
-      <h3 data-template-id="empty-title" class="canva-text mt-3 font-bold" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 19px;">Aún no hay reportes visibles</h3>
-      <p data-template-id="empty-description" class="canva-text mt-1 text-stone-600" style="color: rgb(95, 90, 84); font-weight: 400; font-style: normal; font-size: 16px;">Cuando se registre un reporte, aparecerá aquí para su seguimiento.</p>
+
+     <div id="ticket-list" class="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+     <div id="empty-state" class="mt-6 bg-white border border-dashed border-stone-300 py-12 text-center">
+      <p class="text-stone-600">No hay reportes visibles en este momento.</p>
      </div>
     </div>
    </section>
   </main>
-  <footer data-template-id="site-footer" class="canva-footer bg-[#461022] text-white" style="background: rgb(70, 16, 34); color: rgb(255, 255, 255);">
-   <div class="w-full max-w-7xl mx-auto px-5 py-6 flex flex-col sm:flex-row gap-3 justify-between text-sm">
-    <p data-template-id="footer-text" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 14px;">SIMMEE · Sistema para Monitoreo de Mobiliario y Espacios Educativos</p>
-    <p data-template-id="footer-note" class="canva-text text-[#e6c66b]" style="color: rgb(230, 198, 107); font-weight: 600; font-style: normal; font-size: 14px;">La técnica al servicio de la patria</p>
-   </div>
-  </footer>
-  <div class="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
-   <div data-template-id="juanito-speech" class="canva-banner juanito-speech" role="status" style="background: rgb(255, 253, 249); color: rgb(70, 16, 34); font-weight: 700; font-style: normal; font-size: 16px;">¡Huelum, Huelum, Gloria!</div>
-   <section id="juanito-panel" class="chat-panel w-[min(24rem,calc(100vw-2.5rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl overflow-hidden" aria-label="Chat de ayuda con Juanito">
-    <div data-template-id="chatbot-card" class="canva-card bg-white h-full flex flex-col" style="background: rgb(255, 255, 255);">
-     <div class="p-4 border-b border-stone-100 flex items-center gap-3"><div data-template-id="juanito-avatar" role="img" aria-label="Ilustración de Juanito, estudiante del IPN" class="juanito-avatar avatar-illustration w-36 h-36 shrink-0"><span class="avatar-hair"></span><span class="avatar-face"><span class="avatar-eye avatar-eye-left"></span><span class="avatar-eye avatar-eye-right"></span><span class="avatar-smile"></span></span><span class="avatar-body"><span class="avatar-emblem">IPN</span></span></div>
-      <div class="min-w-0 flex-1">
-       <h2 data-template-id="chatbot-title" class="canva-text font-bold" style="color: rgb(36, 31, 32); font-weight: 700; font-style: normal; font-size: 20px;">Juanito te ayuda</h2>
-       <p data-template-id="chatbot-status" class="canva-text text-sm text-[#215f44]" style="color: rgb(33, 95, 68); font-weight: 600; font-style: normal; font-size: 16px;">Politécnico SIMMEE · En línea</p>
-      </div><button id="close-chat" type="button" class="p-2 rounded-full text-[#6b1531] hover:bg-[#f3eadf] focus:outline-none focus:ring-2 focus:ring-[#6b1531]" aria-label="Cerrar chat"> <i data-lucide="x" class="w-5 h-5"></i> </button>
-     </div>
-     <div id="chat-messages" class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto" aria-live="polite">
-      <div class="chat-bubble-bot p-3 text-sm">
-       <span data-template-id="chatbot-welcome" class="canva-text" style="color: rgb(53, 37, 42); font-weight: 400; font-style: normal; font-size: 16px;">¡Hola! Soy Juanito, estudiante como tú. Puedo ayudarte a redactar tu reporte, elegir la prioridad o entender cómo darle seguimiento a tu folio.</span>
-      </div>
-     </div>
-     <div class="p-4 pt-0">
-      <div class="flex flex-wrap gap-2 mb-3">
-       <button type="button" data-chat-topic="descripcion" data-template-id="chat-topic-description" class="chat-topic canva-button text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold" style="background: rgb(243, 234, 223); color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px;">Mejorar descripción</button> <button type="button" data-chat-topic="prioridad" data-template-id="chat-topic-priority" class="chat-topic canva-button text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold" style="background: rgb(243, 234, 223); color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px;">Elegir prioridad</button> <button type="button" data-chat-topic="seguimiento" data-template-id="chat-topic-followup" class="chat-topic canva-button text-xs px-3 py-1.5 rounded-full bg-[#f3eadf] text-[#6b1531] font-bold" style="background: rgb(243, 234, 223); color: rgb(107, 21, 49); font-weight: 700; font-style: normal; font-size: 16px;">Dar seguimiento</button>
-      </div>
-      <form id="chat-form" class="flex gap-2">
-       <label for="chat-input" class="sr-only">Mensaje para Juanito</label> <input id="chat-input" class="form-control text-sm" type="text"> <button data-template-id="chat-send-button" class="canva-button px-3 rounded-md" type="submit" aria-label="Enviar mensaje" style="background: rgb(107, 21, 49); color: rgb(255, 255, 255);"> <i data-lucide="send-horizontal" class="w-4 h-4"></i> </button>
-      </form>
-     </div>
-    </div>
-   </section><button id="chat-launcher" data-template-id="juanito-launcher" class="canva-button juanito-launcher flex items-center gap-3 rounded-full bg-[#6b1531] text-white pl-2 pr-5 py-2 focus:outline-none focus:ring-4 focus:ring-[#6b1531]/30" type="button" aria-expanded="false" aria-controls="juanito-panel" style="background: rgb(107, 21, 49); color: rgb(255, 255, 255);"> <span data-template-id="juanito-launcher-avatar" role="img" aria-label="Ilustración de Juanito, estudiante del IPN" class="juanito-avatar avatar-illustration mini-avatar"><span class="avatar-hair"></span><span class="avatar-face"><span class="avatar-eye avatar-eye-left"></span><span class="avatar-eye avatar-eye-right"></span><span class="avatar-smile"></span></span><span class="avatar-body"><span class="avatar-emblem">IPN</span></span></span> <span data-template-id="juanito-launcher-text" class="canva-text font-bold" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Pregunta a Juanito</span> <i data-lucide="message-circle" class="w-5 h-5"></i> </button>
-  </div>
+
+  <!-- PLANTILLA DE TARJETAS DE REPORTES -->
   <template id="ticket-template">
-   <article data-template-id="ticket-card" class="canva-card ticket-card bg-white border border-stone-200 rounded-sm p-5 shadow-sm">
-    <div class="flex items-start justify-between gap-3">
-     <p class="ticket-id text-xs font-bold tracking-wider text-[#6b1531]"></p><span class="ticket-status rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap bg-[#efe9de] text-[#5f513f]"></span>
+   <article class="ticket-card bg-white border border-stone-200 rounded p-5 shadow-sm flex flex-col justify-between">
+    <div>
+      <div class="flex items-start justify-between gap-3">
+       <p class="ticket-id text-xs font-bold text-[#6b1531]"></p>
+       <span class="ticket-status-badge rounded-full px-2.5 py-1 text-xs font-bold bg-[#efe9de] text-[#5f513f]"></span>
+       
+       <!-- Menú desplegable interactivo exclusivo del Administrador -->
+       <select class="ticket-status-select hidden text-xs font-bold rounded p-1 border border-stone-300 bg-stone-50">
+         <option value="En revisión">En revisión</option>
+         <option value="En proceso">En proceso</option>
+         <option value="Atendido">Atendido</option>
+       </select>
+      </div>
+      <h3 class="ticket-category mt-3 font-bold text-lg"></h3>
+      <p class="ticket-description mt-2 text-sm text-stone-600"></p>
     </div>
-    <h3 class="ticket-category mt-4 font-bold text-xl"></h3>
-    <p class="ticket-description mt-2 text-sm text-stone-600 leading-relaxed"></p>
-    <div class="mt-5 pt-4 border-t border-stone-100 grid grid-cols-2 gap-4 text-sm">
-     <div>
-      <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Ubicación</p>
-      <p class="ticket-location mt-1 font-semibold"></p>
-     </div>
-     <div>
-      <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Prioridad</p><span class="ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold"></span>
-     </div>
-    </div>
-    <div class="mt-4 flex items-center justify-between gap-3 text-xs text-stone-500">
-     <span class="ticket-role"></span> <time class="ticket-date"></time>
+    <div class="mt-4 pt-3 border-t border-stone-100 flex justify-between items-center text-xs text-stone-500">
+      <span class="ticket-location font-semibold"></span>
+      <span class="ticket-priority px-2 py-0.5 rounded-full font-bold"></span>
     </div>
    </article>
   </template>
+
   <script>
     const records = new Map();
     let searchTerm = "";
     let selectedStatus = "all";
     let imagenBase64 = "";
+    let isAdminMode = false;
+    let isFileUploaded = false;
 
     const form = document.getElementById("report-form");
     const submitButton = document.getElementById("submit-button");
@@ -587,35 +381,86 @@
     const ticketList = document.getElementById("ticket-list");
     const emptyState = document.getElementById("empty-state");
     const ticketCount = document.getElementById("ticket-count");
+    
+    // Controles Administrador
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
+    const toggleAdminBtn = document.getElementById("toggle-admin-btn");
+    const adminPanel = document.getElementById("admin-panel");
+    const adminFileUpload = document.getElementById("admin-file-upload");
 
-    // OPCIÓN 3: Exportación instantánea a CSV compatible con Excel
+    // Acceso / Cierre de modo Administrador
+    toggleAdminBtn.addEventListener("click", () => {
+      if (!isAdminMode) {
+        const pass = prompt("Ingresa la clave de administrador:");
+        if (pass === "admin123") {
+          isAdminMode = true;
+          toggleAdminBtn.textContent = "Cerrar Administrador";
+          toggleAdminBtn.style.background = "#6b1531";
+          toggleAdminBtn.style.color = "#ffffff";
+          adminPanel.classList.remove("hidden");
+          renderTickets();
+        } else if (pass !== null) {
+          alert("Contraseña incorrecta");
+        }
+      } else {
+        isAdminMode = false;
+        toggleAdminBtn.textContent = "Acceso Administrador";
+        toggleAdminBtn.style.background = "transparent";
+        toggleAdminBtn.style.color = "#6b1531";
+        adminPanel.classList.add("hidden");
+        renderTickets();
+      }
+    });
+
+    // Detectar archivo subido por el administrador para activar descarga Excel
+    adminFileUpload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        isFileUploaded = true;
+        exportButton.disabled = false;
+        exportButton.classList.remove("btn-excel-disabled");
+        exportButton.classList.add("btn-excel-enabled");
+        exportMessage.textContent = `Archivo "${file.name}" cargado. Descarga de Excel habilitada.`;
+      } else {
+        isFileUploaded = false;
+        exportButton.disabled = true;
+        exportButton.classList.remove("btn-excel-enabled");
+        exportButton.classList.add("btn-excel-disabled");
+        exportMessage.textContent = "Debes subir un archivo para activar la descarga.";
+      }
+    });
+
+    // Exportar datos a Excel / CSV con decodificación/formato accesible de imagen
     exportButton.addEventListener("click", () => {
-      const reportes = Array.from(records.values());
+      if (!isFileUploaded) {
+        alert("Por favor sube un archivo antes de realizar la descarga.");
+        return;
+      }
 
-      if (!reportes || reportes.length === 0) {
-        exportMessage.textContent = "No hay reportes cargados para descargar. Registra uno o recarga la página.";
+      const reportes = Array.from(records.values());
+      if (reportes.length === 0) {
+        exportMessage.textContent = "No hay reportes cargados para descargar.";
         return;
       }
 
       try {
-        let csvContent = "\uFEFF"; // Mantiene los acentos y las 'ñ' en Excel
-        csvContent += "Folio,Fecha,Unidad,Tipo de espacio,Ubicación,Categoría,Descripción,Prioridad,Estado,Nombre,Correo,Rol,Boleta/ID\n";
+        let csvContent = "\uFEFF";
+        csvContent += "Folio,Fecha,Unidad,Tipo de espacio,Ubicación,Categoría,Descripción,Prioridad,Estado,Nombre,Correo,Rol,Boleta/ID,Evidencia Fotográfica\n";
 
         reportes.forEach(r => {
-          let fecha = "";
-          if (r.created_at) {
-            try {
-              fecha = new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at));
-            } catch (e) { fecha = r.created_at; }
+          const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
+          
+          // Formateo de la celda de la imagen Base64
+          let imagenCelda = "Sin fotografía";
+          if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
+            // Se incrusta una fórmula que Excel interpreta para hacer utilizable/enlazable la imagen
+            imagenCelda = `"=HIPERVINCULO(""${r.evidence_base64}"", ""Ver Fotografía Base64"")"`;
           }
 
-          const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
-
           const fila = [
-            `"${r.ticket_id || r.folio || 'SIMMEE'}"`,
-            `"${fecha}"`,
+            `"${r.ticket_id || 'SIMMEE'}"`,
+            `"${r.created_at || ''}"`,
             `"${r.unit || ''}"`,
             `"${r.location_type || ''}"`,
             `"${r.location_detail || ''}"`,
@@ -626,149 +471,36 @@
             `"${r.reporter_name || ''}"`,
             `"${r.reporter_email || ''}"`,
             `"${r.reporter_role || ''}"`,
-            `"${r.reporter_student_id || ''}"`
+            `"${r.reporter_student_id || ''}"`,
+            imagenCelda
           ].join(",");
+
           csvContent += fila + "\n";
         });
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        
-        const ahora = new Date();
-        const fechaStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
-
         a.href = url;
-        a.download = `SIMMEE_Reportes_${fechaStr}.csv`;
+        a.download = `SIMMEE_Reportes_${new Date().toISOString().slice(0,10)}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        exportMessage.textContent = `Se descargó el archivo con ${reportes.length} reportes correctamente.`;
-      } catch (error) {
-        console.error("Error al exportar:", error);
-        exportMessage.textContent = "Ocurrió un error al generar la descarga.";
+        exportMessage.textContent = `Descargado: ${reportes.length} reportes procesados.`;
+      } catch (err) {
+        console.error("Error al exportar a CSV:", err);
       }
     });
 
-    function showMessage(message, type) {
-      formMessage.textContent = message;
-      formMessage.className = "text-sm rounded-md px-3 py-2";
-      formMessage.classList.add(type === "error" ? "bg-red-50" : "bg-emerald-50");
-      formMessage.classList.add(type === "error" ? "text-red-800" : "text-emerald-800");
+    function showMessage(msg, type) {
+      formMessage.textContent = msg;
+      formMessage.className = `text-sm rounded-md px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`;
+      formMessage.classList.remove("hidden");
     }
 
-    function makeTicketId() {
-      const date = new Date();
-      return "SIMMEE-" + date.getFullYear() +
-        String(date.getMonth() + 1).padStart(2, "0") +
-        String(date.getDate()).padStart(2, "0") +
-        "-" + Math.floor(1000 + Math.random() * 9000);
-    }
-
-    function priorityClass(priority) {
-      return priority === "Alta" ? "priority-alta" : priority === "Baja" ? "priority-baja" : "priority-media";
-    }
-
-    function formatDate(iso) {
-      if (!iso) return "";
-      const date = new Date(iso);
-      return Number.isNaN(date.getTime()) ? iso :
-        new Intl.DateTimeFormat("es-MX", { day: "2-digit", month: "short", year: "numeric" }).format(date);
-    }
-
-    function matchesFilters(item) {
-      const content = [
-        item.ticket_id || "", item.unit || "", item.location_type || "", item.location_detail || "",
-        item.category || "", item.description || "", item.priority || "", item.status || "", item.reporter_role || ""
-      ].join(" ").toLowerCase();
-
-      return content.includes(searchTerm) && (selectedStatus === "all" || item.status === selectedStatus);
-    }
-
-    function updateTicketElement(element, item) {
-      element.querySelector(".ticket-id").textContent = item.ticket_id || item.folio || "SIMMEE";
-      element.querySelector(".ticket-status").textContent = item.status || "En revisión";
-      element.querySelector(".ticket-category").textContent = item.category || "General";
-      element.querySelector(".ticket-description").textContent = item.description || "";
-      element.querySelector(".ticket-location").textContent = (item.unit || "") + " · " + (item.location_type || "") + " " + (item.location_detail || "");
-
-      const priority = element.querySelector(".ticket-priority");
-      priority.textContent = item.priority || "Media";
-      priority.className = "ticket-priority inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold " + priorityClass(item.priority || "Media");
-
-      element.querySelector(".ticket-role").textContent = item.reporter_role || "Comunidad";
-
-      const time = element.querySelector(".ticket-date");
-      time.dateTime = item.created_at || "";
-      time.textContent = formatDate(item.created_at);
-    }
-
-    function renderTickets() {
-      const visible = Array.from(records.values())
-        .filter(matchesFilters)
-        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-      const existing = new Map(Array.from(ticketList.children).map(element => [element.dataset.recordId, element]));
-
-      visible.forEach(item => {
-        const current = existing.get(item.__backendId);
-
-        if (current) {
-          updateTicketElement(current, item);
-          existing.delete(item.__backendId);
-          return;
-        }
-
-        const fragment = document.getElementById("ticket-template").content.cloneNode(true);
-        const card = fragment.querySelector("article");
-        card.dataset.recordId = item.__backendId;
-        updateTicketElement(card, item);
-        ticketList.appendChild(fragment);
-      });
-
-      existing.forEach(element => element.remove());
-      emptyState.classList.toggle("hidden", visible.length > 0);
-      ticketCount.textContent = visible.length + (visible.length === 1 ? " reporte" : " reportes");
-    }
-
-    const dataHandler = {
-      onDataChanged(data) {
-        records.clear();
-        data.forEach(item => records.set(item.__backendId, item));
-        renderTickets();
-      }
-    };
-
-    function validateReporter() {
-      const name = document.getElementById("reporter-name");
-      const email = document.getElementById("reporter-email");
-      const id = document.getElementById("reporter-id");
-
-      [name, email, id].forEach(field => field.classList.remove("invalid"));
-
-      if (name.value.trim().split(/\s+/).length < 2) {
-        name.classList.add("invalid");
-        showMessage("Ingresa nombre y apellido para validar a la persona reportante.", "error");
-        return false;
-      }
-
-      if (!email.validity.valid) {
-        email.classList.add("invalid");
-        showMessage("Ingresa un correo electrónico válido para el seguimiento.", "error");
-        return false;
-      }
-
-      if (!/^[A-Za-z0-9-]{6,}$/.test(id.value.trim())) {
-        id.classList.add("invalid");
-        showMessage("La boleta o número de empleado debe tener al menos 6 caracteres.", "error");
-        return false;
-      }
-
-      return true;
-    }
-
+    // Compresión de imagen Base64 al adjuntar
     document.getElementById("evidence-file").addEventListener("change", event => {
       const file = event.target.files[0];
       const preview = document.getElementById("evidence-preview");
@@ -807,168 +539,100 @@
       reader.readAsDataURL(file);
     });
 
-    form.addEventListener("submit", async event => {
-      event.preventDefault();
+    function renderTickets() {
+      const visible = Array.from(records.values())
+        .filter(r => {
+          const text = [r.ticket_id, r.unit, r.category, r.description, r.status].join(" ").toLowerCase();
+          return text.includes(searchTerm) && (selectedStatus === "all" || r.status === selectedStatus);
+        })
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
+      ticketList.innerHTML = "";
+      visible.forEach(item => {
+        const fragment = document.getElementById("ticket-template").content.cloneNode(true);
+        fragment.querySelector(".ticket-id").textContent = item.ticket_id || "SIMMEE";
+        fragment.querySelector(".ticket-category").textContent = item.category || "General";
+        fragment.querySelector(".ticket-description").textContent = item.description || "";
+        fragment.querySelector(".ticket-location").textContent = `${item.unit || ''} (${item.location_type || ''})`;
+        
+        const badge = fragment.querySelector(".ticket-status-badge");
+        const select = fragment.querySelector(".ticket-status-select");
 
-      if (!validateReporter()) return;
+        if (isAdminMode) {
+          badge.classList.add("hidden");
+          select.classList.remove("hidden");
+          select.value = item.status || "En revisión";
+          select.onchange = async (e) => {
+            select.disabled = true;
+            await window.dataSdk.updateStatus(item.__backendId, e.target.value);
+            select.disabled = false;
+          };
+        } else {
+          badge.classList.remove("hidden");
+          select.classList.add("hidden");
+          badge.textContent = item.status || "En revisión";
+        }
 
-      const ticketId = makeTicketId();
+        const prio = fragment.querySelector(".ticket-priority");
+        prio.textContent = item.priority || "Media";
+        prio.className = `ticket-priority px-2 py-0.5 rounded-full font-bold ${item.priority === 'Alta' ? 'priority-alta' : item.priority === 'Baja' ? 'priority-baja' : 'priority-media'}`;
+
+        ticketList.appendChild(fragment);
+      });
+
+      emptyState.classList.toggle("hidden", visible.length > 0);
+      ticketCount.textContent = `${visible.length} ${visible.length === 1 ? 'reporte' : 'reportes'}`;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
       const record = {
-        ticket_id: ticketId,
+        ticket_id: "SIMMEE-" + Date.now().toString().slice(-6),
         reporter_name: document.getElementById("reporter-name").value.trim(),
-        reporter_role: document.getElementById("reporter-role").value,
         reporter_email: document.getElementById("reporter-email").value.trim(),
+        reporter_role: document.getElementById("reporter-role").value,
         reporter_student_id: document.getElementById("reporter-id").value.trim(),
         unit: document.getElementById("unit").value.trim(),
         location_type: document.getElementById("location-type").value,
         location_detail: document.getElementById("location-detail").value.trim(),
         category: document.getElementById("category").value,
-        description: document.getElementById("description").value.trim(),
-        evidence_file_name: document.getElementById("evidence-file").files[0]?.name || "",
-        evidence_base64: imagenBase64,
         priority: document.getElementById("priority").value,
+        description: document.getElementById("description").value.trim(),
+        evidence_base64: imagenBase64,
         status: "En revisión",
         created_at: new Date().toISOString()
       };
 
       submitButton.disabled = true;
-      submitButton.classList.add("opacity-70", "cursor-wait");
-      formMessage.classList.add("hidden");
-
-      const result = await window.dataSdk.create(record);
-
+      const res = await window.dataSdk.create(record);
       submitButton.disabled = false;
-      submitButton.classList.remove("opacity-70", "cursor-wait");
 
-      if (result.isOk) {
-        document.getElementById("generated-ticket").textContent = ticketId;
+      if (res.isOk) {
+        document.getElementById("generated-ticket").textContent = record.ticket_id;
         document.getElementById("ticket-result").classList.remove("hidden");
-
-        const emailParams = {
-          to_name: record.reporter_name,
-          to_email: record.reporter_email,
-          folio: record.ticket_id,
-          unidad: record.unit,
-          espacio: record.location_type + " " + record.location_detail,
-          categoria: record.category,
-          prioridad: record.priority,
-          descripcion: record.description
-        };
-
-        emailjs.send("service_yhrs7k6", "template_647xar8", emailParams)
-          .then(() => {
-            console.log("Notificación por correo enviada con éxito.");
-          })
-          .catch((err) => {
-            console.error("Error al enviar el correo con EmailJS:", err);
-          });
-
         form.reset();
         document.getElementById("evidence-preview").classList.add("hidden");
         imagenBase64 = "";
-        showMessage("Tu reporte fue registrado correctamente y se guardó en la base de datos compartida.", "success");
+        showMessage("Reporte enviado con éxito.", "success");
       } else {
-        showMessage("No se pudo registrar el reporte. Verifica tu conexión e inténtalo nuevamente.", "error");
+        showMessage("Error al enviar el reporte.", "error");
       }
     });
 
-    document.getElementById("ticket-search").addEventListener("input", event => {
-      searchTerm = event.target.value.trim().toLowerCase();
-      renderTickets();
-    });
-
-    document.getElementById("status-filter").addEventListener("change", event => {
-      selectedStatus = event.target.value;
-      renderTickets();
-    });
-
-    function botReply(message) {
-      const value = message.toLowerCase();
-
-      if (value.includes("prioridad") || value.includes("urgente")) {
-        return "Soy Juanito. Elige prioridad alta si existe riesgo de accidente, daño eléctrico, filtración activa o si el espacio no puede usarse. Para molestias sin riesgo inmediato, selecciona prioridad media o baja.";
-      }
-
-      if (value.includes("seguimiento") || value.includes("estado") || value.includes("folio")) {
-        return "Guarda tu folio SIMMEE y búscalo en el tablero. “En revisión” indica que llegó tu reporte; “En proceso” significa que ya fue asignado y “Atendido” señala que se concluyó el seguimiento.";
-      }
-
-      if (value.includes("descrip") || value.includes("redact") || value.includes("detalle")) {
-        return "Incluye qué objeto está afectado, el daño observable, desde cuándo ocurre y la ubicación exacta. Por ejemplo: “Mesa de trabajo con pata floja en Laboratorio 2, fila 3; representa riesgo de caída.”";
-      }
-
-      if (value.includes("ubic") || value.includes("aula") || value.includes("lugar")) {
-        return "Indica la unidad académica, el tipo de espacio y una referencia concreta: edificio, piso, aula, laboratorio o zona. Una ubicación clara ayuda a atender el reporte más rápido.";
-      }
-
-      return "Puedo ayudarte a mejorar la descripción, elegir la prioridad, explicar qué ubicación registrar o revisar el seguimiento de tu folio.";
-    }
-
-    function appendChat(text, type) {
-      const message = document.createElement("div");
-      message.className = (type === "user" ? "chat-bubble-user ml-8" : "chat-bubble-bot mr-3") + " p-3 text-sm";
-      message.textContent = text;
-
-      const messages = document.getElementById("chat-messages");
-      messages.appendChild(message);
-      messages.scrollTop = messages.scrollHeight;
-    }
-
-    function askBot(text) {
-      if (!text.trim()) return;
-      appendChat(text, "user");
-      window.setTimeout(() => appendChat(botReply(text), "bot"), 220);
-    }
-
-    document.getElementById("chat-form").addEventListener("submit", event => {
-      event.preventDefault();
-      const input = document.getElementById("chat-input");
-      askBot(input.value);
-      input.value = "";
-    });
-
-    document.querySelectorAll(".chat-topic").forEach(button => {
-      button.addEventListener("click", () => {
-        const topic = button.dataset.chatTopic;
-        const message = topic === "descripcion"
-          ? "Ayúdame con la descripción"
-          : topic === "prioridad"
-            ? "¿Qué prioridad debo elegir?"
-            : "¿Cómo doy seguimiento a mi folio?";
-
-        askBot(message);
-      });
-    });
-
-    const chatPanel = document.getElementById("juanito-panel");
-    const chatLauncher = document.getElementById("chat-launcher");
-    const closeChat = document.getElementById("close-chat");
-    const chatInput = document.getElementById("chat-input");
-
-    function setChatOpen(open) {
-      chatPanel.classList.toggle("is-open", open);
-      chatLauncher.setAttribute("aria-expanded", String(open));
-      if (open) window.setTimeout(() => chatInput.focus(), 240);
-    }
-
-    chatLauncher.addEventListener("click", () => {
-      setChatOpen(!chatPanel.classList.contains("is-open"));
-    });
-
-    closeChat.addEventListener("click", () => setChatOpen(false));
+    document.getElementById("ticket-search").addEventListener("input", e => { searchTerm = e.target.value.toLowerCase(); renderTickets(); });
+    document.getElementById("status-filter").addEventListener("change", e => { selectedStatus = e.target.value; renderTickets(); });
 
     document.addEventListener("DOMContentLoaded", async () => {
       if (window.lucide) lucide.createIcons();
-      const initResult = await window.dataSdk.init(dataHandler);
-
-      if (!initResult.isOk) {
-        showMessage("No fue posible conectar con la base de datos de reportes.", "error");
-      }
+      await window.dataSdk.init({
+        onDataChanged(data) {
+          records.clear();
+          data.forEach(item => records.set(item.__backendId, item));
+          renderTickets();
+        }
+      });
     });
   </script>
 </body>
