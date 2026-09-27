@@ -296,8 +296,8 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- Cargamos la librería SheetJS para la descarga de hojas de cálculo -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Cargamos ExcelJS para permitir incrustar imágenes en celdas de Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
   <script>
   (() => {
   const storageKey = "simmee-reports";
@@ -589,7 +589,8 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
-    exportButton.addEventListener("click", () => {
+    // Función principal para la exportación de Excel con imágenes embebidas
+    exportButton.addEventListener("click", async () => {
       let reportes = [];
       try {
         const raw = localStorage.getItem("simmee-reports");
@@ -607,52 +608,125 @@
         return;
       }
 
-      if (typeof XLSX === "undefined") {
-        exportMessage.textContent = "No se pudo cargar la librería de Excel. Verifica que tienes conexión a internet.";
+      if (typeof ExcelJS === "undefined") {
+        exportMessage.textContent = "No se pudo cargar la librería ExcelJS. Verifica que tienes conexión a internet.";
         return;
       }
 
       try {
-        const encabezados = [
-          "Folio", "Fecha", "Unidad", "Tipo de espacio", "Ubicación",
-          "Categoría", "Descripción", "Prioridad", "Estado",
-          "Nombre reportante", "Correo", "Rol", "Boleta/ID", "Archivo de evidencia"
+        exportMessage.textContent = "Generando archivo Excel con imágenes...";
+        
+        // Crear libro y hoja de trabajo con ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Reportes SIMMEE");
+
+        // Definir columnas con ancho ajustado
+        worksheet.columns = [
+          { header: "Folio", key: "ticket_id", width: 22 },
+          { header: "Fecha", key: "created_at", width: 20 },
+          { header: "Unidad", key: "unit", width: 24 },
+          { header: "Tipo de espacio", key: "location_type", width: 20 },
+          { header: "Ubicación", key: "location_detail", width: 30 },
+          { header: "Categoría", key: "category", width: 22 },
+          { header: "Descripción", key: "description", width: 50 },
+          { header: "Prioridad", key: "priority", width: 14 },
+          { header: "Estado", key: "status", width: 18 },
+          { header: "Nombre reportante", key: "reporter_name", width: 25 },
+          { header: "Correo", key: "reporter_email", width: 28 },
+          { header: "Rol", key: "reporter_role", width: 18 },
+          { header: "Boleta/ID", key: "reporter_student_id", width: 18 },
+          { header: "Fotografía de evidencia", key: "evidence", width: 25 }
         ];
 
-        const filas = reportes.map(reporte => [
-          reporte.ticket_id || "",
-          reporte.created_at
-            ? new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(reporte.created_at))
-            : "",
-          reporte.unit || "",
-          reporte.location_type || "",
-          reporte.location_detail || "",
-          reporte.category || "",
-          reporte.description || "",
-          reporte.priority || "",
-          reporte.status || "",
-          reporte.reporter_name || "",
-          reporte.reporter_email || "",
-          reporte.reporter_role || "",
-          reporte.reporter_student_id || "",
-          reporte.evidence_file_name || ""
-        ]);
+        // Estilar la fila del encabezado
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        headerRow.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF6B1531" } // Color tinto institucional
+        };
+        headerRow.height = 25;
+        headerRow.alignment = { vertical: "middle", horizontal: "center" };
 
-        const hoja = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
-        hoja["!cols"] = [
-          { wch: 22 }, { wch: 20 }, { wch: 24 }, { wch: 20 },
-          { wch: 30 }, { wch: 22 }, { wch: 55 }, { wch: 14 },
-          { wch: 18 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 32 }
-        ];
+        // Recorrer los reportes para agregarlos al Excel
+        for (let i = 0; i < reportes.length; i++) {
+          const r = reportes[i];
+          const rowIndex = i + 2; // Fila actual (después del encabezado)
 
-        const libro = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(libro, hoja, "Reportes SIMMEE");
+          const fechaFormateada = r.created_at
+            ? new Intl.DateTimeFormat("es-MX", { dateStyle: "short", timeStyle: "short" }).format(new Date(r.created_at))
+            : "";
 
+          const row = worksheet.addRow({
+            ticket_id: r.ticket_id || "",
+            created_at: fechaFormateada,
+            unit: r.unit || "",
+            location_type: r.location_type || "",
+            location_detail: r.location_detail || "",
+            category: r.category || "",
+            description: r.description || "",
+            priority: r.priority || "",
+            status: r.status || "",
+            reporter_name: r.reporter_name || "",
+            reporter_email: r.reporter_email || "",
+            reporter_role: r.reporter_role || "",
+            reporter_student_id: r.reporter_student_id || "",
+            evidence: r.evidence_base64 ? "" : (r.evidence_file_name || "Sin foto")
+          });
+
+          // Alineación y ajuste de texto en la celda
+          row.alignment = { vertical: "middle", wrapText: true };
+
+          // Si el reporte cuenta con imagen Base64, decodificarla e incrustarla en la celda
+          if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
+            try {
+              // Extraer extensión de la imagen (png, jpeg, webp)
+              const mimeMatch = r.evidence_base64.match(/data:image\/(png|jpeg|jpg|webp);base64,/);
+              let extension = "png";
+              if (mimeMatch && mimeMatch[1]) {
+                extension = mimeMatch[1] === "jpg" ? "jpeg" : mimeMatch[1];
+              }
+
+              // Decodificar Base64 a id de imagen en ExcelJS
+              const imageId = workbook.addImage({
+                base64: r.evidence_base64,
+                extension: extension
+              });
+
+              // Posicionar la imagen dentro de la celda de la columna 14 (Fotografía)
+              worksheet.addImage(imageId, {
+                tl: { col: 13, row: rowIndex - 1 },
+                ext: { width: 120, height: 110 }
+              });
+
+              // Ajustar altura de la fila para dar espacio a la imagen
+              worksheet.getRow(rowIndex).height = 90;
+            } catch (errImg) {
+              console.error("Error al incrustar la imagen en ExcelJS:", errImg);
+            }
+          } else {
+            worksheet.getRow(rowIndex).height = 30;
+          }
+        }
+
+        // Exportar como archivo descendible .xlsx
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        
         const ahora = new Date();
-        const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
+        const fechaStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
+        
+        a.href = url;
+        a.download = `SIMMEE_Reportes_${fechaStr}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
 
-        XLSX.writeFile(libro, `SIMMEE_Reportes_${fecha}.xlsx`);
-        exportMessage.textContent = `Se descargaron ${filas.length} reportes correctamente.`;
+        exportMessage.textContent = `Se descargó el archivo Excel con ${reportes.length} reportes correctamente.`;
       } catch (error) {
         console.error(error);
         exportMessage.textContent = "Ocurrió un error al generar el archivo Excel.";
