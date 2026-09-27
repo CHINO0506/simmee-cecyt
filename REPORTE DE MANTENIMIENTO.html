@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es-MX">
 <head>
@@ -14,6 +13,9 @@
        emailjs.init("jsWGbUD11FRxkiseZ");
     })();
   </script>
+
+  <!-- Librería ExcelJS para incrustar imágenes reales en el Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -184,12 +186,12 @@
        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
          <div>
            <p class="font-bold text-amber-900 text-lg">Panel de Control Administrador</p>
-           <p class="text-xs text-amber-800">El botón de descarga de Excel está activo permanentemente.</p>
+           <p class="text-xs text-amber-800">Descarga el reporte completo con imágenes incrustadas en formato XLSX.</p>
          </div>
          
          <div>
            <button id="export-excel" class="btn-excel-enabled px-4 py-2 rounded-md text-sm font-bold transition-all">
-             Descargar Excel (.csv)
+             Descargar Excel con Fotos (.xlsx)
            </button>
          </div>
        </div>
@@ -438,8 +440,8 @@
       reader.readAsDataURL(file);
     });
 
-    // Modificación para exportar de forma segura sin romper el CSV en Excel
-    exportButton.addEventListener("click", () => {
+    // Función avanzada con ExcelJS para incrustar las imágenes directamente en el Excel
+    exportButton.addEventListener("click", async () => {
       const reportes = Array.from(records.values());
       if (reportes.length === 0) {
         exportMessage.textContent = "Aún no hay reportes registrados para exportar.";
@@ -447,52 +449,88 @@
       }
 
       try {
-        let csvContent = "\uFEFF";
-        csvContent += "Folio,Fecha,Unidad,Tipo de espacio,Ubicación,Categoría,Descripción,Prioridad,Estado,Nombre,Correo,Rol,Boleta/ID,Evidencia Fotográfica\n";
+        exportMessage.textContent = "Generando archivo Excel con imágenes...";
+        
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("Reportes SIMMEE");
 
-        reportes.forEach(r => {
-          const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
-          
-          // Reemplazamos la fórmula compleja de hipervínculo por un indicador limpio de texto
-          let imagenCelda = "Sin fotografía";
+        // Definir columnas
+        sheet.columns = [
+          { header: "Folio", key: "ticket_id", width: 15 },
+          { header: "Fecha", key: "created_at", width: 20 },
+          { header: "Unidad", key: "unit", width: 20 },
+          { header: "Tipo", key: "location_type", width: 15 },
+          { header: "Ubicación", key: "location_detail", width: 20 },
+          { header: "Categoría", key: "category", width: 15 },
+          { header: "Descripción", key: "description", width: 30 },
+          { header: "Prioridad", key: "priority", width: 12 },
+          { header: "Estado", key: "status", width: 15 },
+          { header: "Reportante", key: "reporter_name", width: 20 },
+          { header: "Correo", key: "reporter_email", width: 25 },
+          { header: "Rol", key: "reporter_role", width: 18 },
+          { header: "ID / Boleta", key: "reporter_student_id", width: 15 },
+          { header: "Evidencia Fotográfica", key: "photo_col", width: 22 }
+        ];
+
+        // Estilizar cabecera
+        sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+        sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "6B1531" } };
+
+        let rowIndex = 2;
+        for (const r of reportes) {
+          sheet.addRow({
+            ticket_id: r.ticket_id || "SIMMEE",
+            created_at: r.created_at ? new Date(r.created_at).toLocaleString() : "",
+            unit: r.unit || "",
+            location_type: r.location_type || "",
+            location_detail: r.location_detail || "",
+            category: r.category || "",
+            description: r.description || "",
+            priority: r.priority || "Media",
+            status: r.status || "En revisión",
+            reporter_name: r.reporter_name || "",
+            reporter_email: r.reporter_email || "",
+            reporter_role: r.reporter_role || "",
+            reporter_student_id: r.reporter_student_id || "",
+            photo_col: r.evidence_base64 ? "" : "Sin fotografía"
+          });
+
+          // Ajustar altura de la fila para dar espacio a la foto
+          sheet.getRow(rowIndex).height = 70;
+
+          // Si hay fotografía en base64, incrustarla directamente en la celda
           if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
-            imagenCelda = "Fotografía adjunta en sistema";
+            const base64Data = r.evidence_base64.split(",")[1];
+            const imageId = workbook.addImage({
+              base64: base64Data,
+              extension: 'jpeg',
+            });
+
+            sheet.addImage(imageId, {
+              tl: { col: 13, row: rowIndex - 1 }, // Columna 13 (Evidencia Fotográfica)
+              ext: { width: 90, height: 60 }
+            });
           }
 
-          const fila = [
-            `"${r.ticket_id || 'SIMMEE'}"`,
-            `"${r.created_at || ''}"`,
-            `"${r.unit || ''}"`,
-            `"${r.location_type || ''}"`,
-            `"${r.location_detail || ''}"`,
-            `"${r.category || ''}"`,
-            `"${descLimpia}"`,
-            `"${r.priority || 'Media'}"`,
-            `"${r.status || 'En revisión'}"`,
-            `"${r.reporter_name || ''}"`,
-            `"${r.reporter_email || ''}"`,
-            `"${r.reporter_role || ''}"`,
-            `"${r.reporter_student_id || ''}"`,
-            `"${imagenCelda}"`
-          ].join(",");
+          rowIndex++;
+        }
 
-          csvContent += fila + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        // Descargar el archivo XLSX
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `SIMMEE_Reportes_${new Date().toISOString().slice(0,10)}.csv`;
+        a.download = `SIMMEE_Reportes_${new Date().toISOString().slice(0,10)}.xlsx`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        exportMessage.textContent = `Descargado: ${reportes.length} reportes procesados con éxito.`;
+        exportMessage.textContent = `¡Éxito! Se exportaron ${reportes.length} reportes con sus fotografías visibles.`;
       } catch (err) {
-        console.error("Error al exportar a CSV:", err);
-        exportMessage.textContent = "Hubo un error al generar el archivo.";
+        console.error("Error al exportar a XLSX con imágenes:", err);
+        exportMessage.textContent = "Hubo un error al generar el archivo Excel.";
       }
     });
 
