@@ -490,7 +490,7 @@
      
      <div style="display:flex;justify-content:flex-end;margin:18px 0 8px">
        <button id="export-excel" type="button" style="background:#6b1531;color:white;padding:10px 16px;border:0;border-radius:6px;cursor:pointer;font-weight:700">
-         Descargar Excel
+         Descargar Excel (Modo Admin)
        </button>
      </div>
      <p id="export-message" role="status" aria-live="polite" style="text-align:right;color:#5e5a5c;font-size:14px"></p>
@@ -617,7 +617,24 @@
     const exportButton = document.getElementById("export-excel");
     const exportMessage = document.getElementById("export-message");
 
+    // Función de Modo Administrador para descarga de Excel
     exportButton.addEventListener("click", () => {
+      const passwordIngresada = prompt("Ingresa la contraseña de administrador para descargar el reporte en Excel:");
+      
+      // Contraseña predeterminada (puedes cambiarla aquí si lo deseas)
+      const passwordAdmin = "admin123";
+
+      if (passwordIngresada === null) {
+        return; // Cancelado por el usuario
+      }
+
+      if (passwordIngresada !== passwordAdmin) {
+        exportMessage.textContent = "Contraseña incorrecta. Acceso denegado para la descarga.";
+        exportMessage.style.color = "#9b1c1c";
+        return;
+      }
+
+      exportMessage.style.color = "#5e5a5c";
       let reportes = [];
       try {
         const raw = localStorage.getItem("simmee-reports");
@@ -667,7 +684,7 @@
         const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`;
 
         XLSX.writeFile(libro, `SIMMEE_Reportes_${fecha}.xlsx`);
-        exportMessage.textContent = `Se descargaron ${filas.length} reportes correctamente.`;
+        exportMessage.textContent = `Acceso concedido. Se descargaron ${filas.length} reportes correctamente.`;
       } catch (error) {
         console.error(error);
         exportMessage.textContent = "Ocurrió un error al generar el archivo Excel.";
