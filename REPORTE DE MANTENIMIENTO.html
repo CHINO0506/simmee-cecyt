@@ -4,6 +4,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIMMEE — Sistema para Monitoreo de Mobiliario y Espacios Educativos</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&amp;family=Source+Sans+Pro:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+  
+  <!-- SDK de EmailJS para envío de notificaciones por correo -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){
+      
+       emailjs.init("jsWGbUD11FRxkiseZ");
+    })();
+  </script>
+
   <style>
     :root {
       --wine: #6b1531;
@@ -335,7 +345,7 @@
 </script>
  </head>
  <body data-template-id="__page-root" class="w-full min-h-screen" style="background: rgb(247, 244, 239);">
-  <div class="top-stripe"></div><nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif"><a href="PAGINA_PRINCIPAL.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a></nav>
+  <div class="top-stripe"></div><nav aria-label="Navegación del sitio" style="padding:.65rem max(1.25rem,calc((100% - 80rem)/2));background:#f7f4ef;border-bottom:1px solid #e7e2dc;font:600 .92rem Arial,sans-serif"><a href="index.html" style="color:#6b1531;text-decoration:none">← Volver a la página principal</a></nav>
   <header data-template-id="site-header" class="canva-header bg-white border-b border-stone-200" style="background: rgb(255, 255, 255);">
    <div class="w-full max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3 min-w-0">
@@ -568,6 +578,7 @@
     const records = new Map();
     let searchTerm = "";
     let selectedStatus = "all";
+    let imagenBase64 = ""; // Variable para almacenar la imagen en texto Base64
 
     const form = document.getElementById("report-form");
     const submitButton = document.getElementById("submit-button");
@@ -602,7 +613,7 @@
         const encabezados = [
           "Folio", "Fecha", "Unidad", "Tipo de espacio", "Ubicación",
           "Categoría", "Descripción", "Prioridad", "Estado",
-          "Perfil reportante", "Archivo de evidencia"
+          "Perfil reportante", "Archivo de evidencia", "Imagen Base64"
         ];
 
         const filas = reportes.map(reporte => [
@@ -618,14 +629,15 @@
           reporte.priority || "",
           reporte.status || "",
           reporte.reporter_role || "",
-          reporte.evidence_file_name || ""
+          reporte.evidence_file_name || "",
+          reporte.evidence_base64 || ""
         ]);
 
         const hoja = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
         hoja["!cols"] = [
           { wch: 22 }, { wch: 20 }, { wch: 24 }, { wch: 20 },
           { wch: 30 }, { wch: 22 }, { wch: 55 }, { wch: 14 },
-          { wch: 18 }, { wch: 20 }, { wch: 32 }
+          { wch: 18 }, { wch: 20 }, { wch: 32 }, { wch: 40 }
         ];
 
         const libro = XLSX.utils.book_new();
@@ -758,17 +770,26 @@
       return true;
     }
 
+    // Convertir imagen cargada a Base64 y mostrar vista previa
     document.getElementById("evidence-file").addEventListener("change", event => {
       const file = event.target.files[0];
       const preview = document.getElementById("evidence-preview");
       const image = document.getElementById("evidence-preview-image");
+
       if (!file) {
         preview.classList.add("hidden");
         image.removeAttribute("src");
+        imagenBase64 = "";
         return;
       }
-      image.src = URL.createObjectURL(file);
-      preview.classList.remove("hidden");
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        imagenBase64 = evt.target.result;
+        image.src = imagenBase64;
+        preview.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
     });
 
     form.addEventListener("submit", async event => {
@@ -799,6 +820,7 @@
         category: document.getElementById("category").value,
         description: document.getElementById("description").value.trim(),
         evidence_file_name: document.getElementById("evidence-file").files[0]?.name || "",
+        evidence_base64: imagenBase64,
         priority: document.getElementById("priority").value,
         status: "En revisión",
         created_at: new Date().toISOString()
@@ -816,8 +838,31 @@
       if (result.isOk) {
         document.getElementById("generated-ticket").textContent = ticketId;
         document.getElementById("ticket-result").classList.remove("hidden");
+
+        // Enviar notificación por correo usando EmailJS
+        const emailParams = {
+          to_name: record.reporter_name,
+          to_email: record.reporter_email,
+          folio: record.ticket_id,
+          unidad: record.unit,
+          espacio: record.location_type + " " + record.location_detail,
+          categoria: record.category,
+          prioridad: record.priority,
+          descripcion: record.description
+        };
+
+        emailjs.send("service_yhrs7k6", "template_647xar8", emailParams)
+          .then(() => {
+            console.log("Notificación por correo enviada con éxito.");
+          })
+          .catch((err) => {
+            console.error("Error al enviar el correo con EmailJS:", err);
+          });
+
         form.reset();
-        showMessage("Tu reporte fue registrado correctamente y quedó disponible para seguimiento.", "success");
+        document.getElementById("evidence-preview").classList.add("hidden");
+        imagenBase64 = "";
+        showMessage("Tu reporte fue registrado correctamente y se envió una notificación a tu correo.", "success");
       } else {
         showMessage("No se pudo registrar el reporte. Verifica tu conexión e inténtalo nuevamente.", "error");
       }
