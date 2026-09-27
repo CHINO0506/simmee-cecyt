@@ -290,13 +290,33 @@
       </section>
      </div>
 
-     <aside>
+     <aside class="space-y-6">
       <section class="bg-[#6b1531] text-white p-6 shadow-lg rounded">
        <h2 class="font-bold text-xl">Constancia de reporte</h2>
        <p class="mt-2 text-[#f5e8d7] text-sm">Conserva tu folio generado para consulta posterior.</p>
        <div id="ticket-result" class="hidden mt-4 rounded bg-white/10 p-4 border border-white/20">
         <p class="text-xs uppercase text-[#e6c66b] font-bold">Folio asignado</p>
         <p id="generated-ticket" class="mt-1 font-bold text-xl tracking-wide"></p>
+       </div>
+      </section>
+
+      <!-- CHATBOT JUANITO -->
+      <section class="bg-white border border-stone-200 rounded shadow-sm p-5">
+       <div class="flex items-center gap-3 border-b pb-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-[#6b1531] text-white flex items-center justify-center font-bold">J</div>
+        <div>
+         <p class="font-bold text-stone-800">Juanito</p>
+         <p class="text-xs text-stone-500">Asistente Virtual SIMMEE</p>
+        </div>
+       </div>
+       <div id="chat-messages" class="h-48 overflow-y-auto space-y-3 text-sm pr-2 bg-stone-50 p-3 rounded border border-stone-100">
+        <div class="bg-white p-2.5 rounded shadow-sm border border-stone-200 max-w-[85%]">
+         <p class="text-stone-800">¡Hola! Soy <strong>Juanito</strong>. ¿Tienes dudas sobre cómo levantar tu reporte o adjuntar tu fotografía de evidencia? Pregúntame lo que necesites.</p>
+        </div>
+       </div>
+       <div class="mt-3 flex gap-2">
+        <input id="chat-input" type="text" class="form-control text-sm" placeholder="Escribe tu duda aquí...">
+        <button id="chat-send" class="bg-[#6b1531] text-white px-4 rounded font-bold text-sm">Enviar</button>
        </div>
       </section>
      </aside>
@@ -624,6 +644,41 @@
 
     document.getElementById("ticket-search").addEventListener("input", e => { searchTerm = e.target.value.toLowerCase(); renderTickets(); });
     document.getElementById("status-filter").addEventListener("change", e => { selectedStatus = e.target.value; renderTickets(); });
+
+    // Lógica del Chatbot Juanito
+    const chatMessages = document.getElementById("chat-messages");
+    const chatInput = document.getElementById("chat-input");
+    const chatSend = document.getElementById("chat-send");
+
+    function appendMessage(sender, text) {
+      const div = document.createElement("div");
+      div.className = sender === 'user' ? 'text-right' : 'text-left';
+      div.innerHTML = `<div class="inline-block p-2.5 rounded shadow-sm text-sm max-w-[85%] ${sender === 'user' ? 'bg-[#6b1531] text-white' : 'bg-white border border-stone-200 text-stone-800'}">${text}</div>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function handleChat() {
+      const txt = chatInput.value.trim().toLowerCase();
+      if (!txt) return;
+      appendMessage('user', chatInput.value.trim());
+      chatInput.value = "";
+
+      setTimeout(() => {
+        let reply = "Entiendo. Recuerda llenar todos los campos obligatorios y adjuntar tu foto de evidencia para que el reporte sea atendido rápidamente.";
+        if (txt.includes('foto') || txt.includes('evidencia')) {
+          reply = "Para que la fotografía sea válida como evidencia, súbela en formato JPG o PNG. Al descargar el Excel como administrador, aparecerá incrustada automáticamente.";
+        } else if (txt.includes('folio') || txt.includes('ticket')) {
+          reply = "Una vez que envíes tu reporte, se generará un número de folio único en la sección de constancia.";
+        } else if (txt.includes('hola') || txt.includes('buenos')) {
+          reply = "¡Hola! ¿En qué puedo apoyarte hoy con tu registro en SIMMEE?";
+        }
+        appendMessage('bot', reply);
+      }, 500);
+    }
+
+    chatSend.addEventListener("click", handleChat);
+    chatInput.addEventListener("keypress", (e) => { if (e.key === 'Enter') handleChat(); });
 
     document.addEventListener("DOMContentLoaded", async () => {
       if (window.lucide) lucide.createIcons();
