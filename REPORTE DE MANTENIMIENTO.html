@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es-MX">
 <head>
@@ -73,7 +74,6 @@
     .priority-media { color: #875600; background: #fff4d7; }
     .priority-baja { color: #215f44; background: #e2f4e9; }
 
-    /* Estilo activo por defecto para el botón de Excel */
     .btn-excel-enabled {
       background: #6b1531 !important;
       color: #ffffff !important;
@@ -188,7 +188,6 @@
          </div>
          
          <div>
-           <!-- Botón activo por defecto (sin atributo disabled) -->
            <button id="export-excel" class="btn-excel-enabled px-4 py-2 rounded-md text-sm font-bold transition-all">
              Descargar Excel (.csv)
            </button>
@@ -378,7 +377,6 @@
     const toggleAdminBtn = document.getElementById("toggle-admin-btn");
     const adminPanel = document.getElementById("admin-panel");
 
-    // Acceso / Cierre de modo Administrador
     toggleAdminBtn.addEventListener("click", () => {
       if (!isAdminMode) {
         const pass = prompt("Ingresa la clave de administrador:");
@@ -402,7 +400,6 @@
       }
     });
 
-    // Gestión de la imagen Base64 al cargar archivo en el formulario
     document.getElementById("evidence-file").addEventListener("change", event => {
       const file = event.target.files[0];
       const preview = document.getElementById("evidence-preview");
@@ -441,7 +438,7 @@
       reader.readAsDataURL(file);
     });
 
-    // Exportar datos a Excel / CSV con decodificación de imagen Base64 mediante enlace
+    // Modificación para exportar de forma segura sin romper el CSV en Excel
     exportButton.addEventListener("click", () => {
       const reportes = Array.from(records.values());
       if (reportes.length === 0) {
@@ -456,9 +453,10 @@
         reportes.forEach(r => {
           const descLimpia = (r.description || "").replace(/"/g, '""').replace(/\n/g, ' ');
           
+          // Reemplazamos la fórmula compleja de hipervínculo por un indicador limpio de texto
           let imagenCelda = "Sin fotografía";
           if (r.evidence_base64 && r.evidence_base64.startsWith("data:image")) {
-            imagenCelda = `"=HIPERVINCULO(""${r.evidence_base64}"", ""Ver Fotografía Base64"")"`;
+            imagenCelda = "Fotografía adjunta en sistema";
           }
 
           const fila = [
@@ -475,7 +473,7 @@
             `"${r.reporter_email || ''}"`,
             `"${r.reporter_role || ''}"`,
             `"${r.reporter_student_id || ''}"`,
-            imagenCelda
+            `"${imagenCelda}"`
           ].join(",");
 
           csvContent += fila + "\n";
@@ -491,9 +489,10 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        exportMessage.textContent = `Descargado: ${reportes.length} reportes procesados.`;
+        exportMessage.textContent = `Descargado: ${reportes.length} reportes procesados con éxito.`;
       } catch (err) {
         console.error("Error al exportar a CSV:", err);
+        exportMessage.textContent = "Hubo un error al generar el archivo.";
       }
     });
 
